@@ -1,0 +1,3833 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ТОРГ УМЕСТЕН v0.96 - Симулятор Барахольщика</title>
+
+<script src="constants.js"></script>
+<script src="game_core.js"></script>
+<script src="market.js"></script>
+<script src="inventory.js"></script>
+<script src="zones.js"></script>
+<script src="sales.js"></script>
+<script src="expertise.js"></script>
+<script src="expertise_render.js"></script>
+<script src="restoration.js"></script>
+
+
+<script src="tailwind.js"></script>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body class="p-1 md:p-2 ">
+    <div id="notificationContainer"></div>
+    
+    
+
+        <div class="bg-white rounded-lg shadow-xl mb-1 flex flex-col" style="height: calc(100vh - 100px); min-height: 500px;">
+            <!-- В блоке с вкладками добавляем новую кнопку -->
+<div class="flex border-b overflow-x-auto flex-shrink-0">
+    <button class="tab-active px-6 py-3 font-semibold rounded-tl-lg whitespace-nowrap" onclick="switchTab('market')" id="tab-market">🏪 Рынок</button>
+    <button class="px-6 py-3 font-semibold hover:bg-gray-100 whitespace-nowrap" onclick="switchTab('inventory')" id="tab-inventory">🎒 Инвентарь</button>
+    <button class="px-6 py-3 font-semibold hover:bg-gray-100 whitespace-nowrap" onclick="switchTab('selling')" id="tab-selling">💼 Продажа</button>
+    <button class="px-6 py-3 font-semibold hover:bg-gray-100 whitespace-nowrap" onclick="switchTab('knowledge')" id="tab-knowledge">📚 База знаний</button>
+    <button class="px-6 py-3 font-semibold hover:bg-gray-100 whitespace-nowrap" onclick="switchTab('stats')" id="tab-stats">📊 Статистика</button>
+    <button class="px-6 py-3 font-semibold hover:bg-gray-100 whitespace-nowrap" onclick="switchTab('help')" id="tab-help">❓ Справка</button>
+    <button class="px-6 py-3 font-semibold hover:bg-gray-100 whitespace-nowrap" onclick="switchTab('zones')" id="tab-zones" style="display: none;">⚙️ Зоны</button>
+</div>
+
+
+
+<!-- Добавляем контейнер для вкладки зон (в блок с контентом вкладок) -->
+<div id="content-zones" class="p-6 hidden">
+    <h2 class="text-2xl font-bold mb-4">Настройка зон экспертизы</h2>
+    <div class="flex flex-col md:flex-row gap-6">
+        <div class="flex-1">
+            <div class="relative" style="padding-bottom: 100%;">
+                <img id="zones-table-image" src="table.png" alt="Рабочий стол" class="absolute inset-0 w-full h-full object-contain">
+                <div id="zones-preview-overlay" class="absolute inset-0"></div>
+            </div>
+        </div>
+        <div class="md:w-1/3">
+            <div id="zone-props" class="space-y-4">
+                <p class="text-gray-500">Выберите зону для редактирования</p>
+            </div>
+            <div class="mt-6">
+                <button onclick="exportZonesCode()" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded">Экспорт кода</button>
+                <button onclick="resetZones()" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded ml-2">Сбросить</button>
+            </div>
+            <div class="mt-6">
+                <pre id="exported-code" class="bg-gray-800 text-green-400 p-4 rounded text-sm overflow-auto" style="display: none;"></pre>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- Добавляем контент для справки -->
+<<div id="content-help" class="p-3 hidden flex-1 overflow-y-auto">
+    <div class="max-w-4xl mx-auto">
+        <h2 class="text-3xl font-bold mb-6 text-center">📚 Справка по игре "ТОРГ УМЕСТЕН"</h2>
+        
+        <!-- Оглавление -->
+        <div class="bg-blue-50 p-4 rounded-lg mb-6">
+            <h3 class="font-bold mb-3">📖 Оглавление</h3>
+            <ul class="list-disc list-inside space-y-1">
+                <li><a href="#basics" class="text-blue-600 hover:underline">Основы игры</a></li>
+                <li><a href="#interface" class="text-blue-600 hover:underline">Интерфейс и показатели</a></li>
+                <li><a href="#market" class="text-blue-600 hover:underline">Рынок и покупки</a></li>
+                <li><a href="#expertise" class="text-blue-600 hover:underline">Экспертиза предметов</a></li>
+                <li><a href="#restoration" class="text-blue-600 hover:underline">Реставрация</a></li>
+                <li><a href="#selling" class="text-blue-600 hover:underline">Продажа предметов</a></li>
+                <li><a href="#skills" class="text-blue-600 hover:underline">Система навыков</a></li>
+                <li><a href="#samples" class="text-blue-600 hover:underline">Образцы для экспертизы</a></li>
+                <li><a href="#tips" class="text-blue-600 hover:underline">Советы и стратегии</a></li>
+            </ul>
+        </div>
+
+        <!-- Основы игры -->
+        <div id="basics" class="mb-8">
+            <h3 class="text-2xl font-bold mb-4">🎯 Основы игры</h3>
+            <div class="bg-white p-4 rounded-lg shadow">
+                <p class="mb-3">Вы - начинающий антиквар, который покупает, исследует и продает старинные предметы. Ваша цель - заработать <strong>100,000 рублей</strong> и достичь <strong>50 репутации</strong>.</p>
+                <p class="mb-3">Каждый день на рынке появляются новые предметы от разных продавцов. Ваша задача - находить ценные экземпляры, правильно их оценивать и продавать с прибылью.</p>
+                <div class="bg-yellow-50 p-3 rounded border border-yellow-200">
+                    <strong>💡 Цель игры:</strong> 100,000р + 50 репутации
+                </div>
+            </div>
+        </div>
+
+        <!-- Интерфейс и показатели -->
+        <div id="interface" class="mb-8">
+            <h3 class="text-2xl font-bold mb-4">📊 Интерфейс и показатели</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="bg-green-50 p-4 rounded-lg">
+                    <h4 class="font-bold mb-2">💰 Деньги</h4>
+                    <p>Основная валюта игры. Тратится на покупку предметов, экспертизу и реставрацию. Каждый день платится 500р аренды.</p>
+                </div>
+                <div class="bg-yellow-50 p-4 rounded-lg">
+                    <h4 class="font-bold mb-2">⭐ Репутация</h4>
+                    <p>Повышается при успешной экспертизе. Влияет на доступ к постоянным клиентам. Цель - 50 единиц.</p>
+                </div>
+                <div class="bg-blue-50 p-4 rounded-lg">
+                    <h4 class="font-bold mb-2">📅 День</h4>
+                    <p>Текущий день игры. Каждый день приносит новые товары на рынок и продвигает активные продажи.</p>
+                </div>
+                <div class="bg-gray-50 p-4 rounded-lg">
+                    <h4 class="font-bold mb-2">⚡ Внимание</h4>
+                    <p>Ежедневный ограниченный ресурс. Тратится на экспертизу предметов. Восстанавливается каждый день до 100.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Рынок и покупки -->
+        <div id="market" class="mb-8">
+            <h3 class="text-2xl font-bold mb-4">🏪 Рынок и покупки</h3>
+            <div class="bg-white p-4 rounded-lg shadow">
+                <h4 class="font-bold mb-3">🛍️ Как покупать предметы</h4>
+                <ul class="list-disc list-inside space-y-2 mb-4">
+                    <li>На вкладке <strong>"Рынок"</strong> представлены доступные товары</li>
+                    <li>Каждый предмет имеет <strong>начальную цену</strong> продавца</li>
+                    <li>Нажмите на товар для начала <strong>торга</strong></li>
+                    <li>Используйте разные тактики торга для снижения цены</li>
+                </ul>
+
+                <h4 class="font-bold mb-3">💬 Система тактик торга</h4>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
+                    <div class="border p-3 rounded bg-blue-50">
+                        <strong>🚶 Делаю вид что ухожу</strong> - базовая тактика, доступна с начала
+                    </div>
+                    <div class="border p-3 rounded bg-blue-50">
+                        <strong>😢 Давлю на жалость</strong> - эмоциональное воздействие
+                    </div>
+                    <div class="border p-3 rounded bg-green-50">
+                        <strong>🔍 Указываю на дефекты</strong> - открывается после 3 успешных покупок
+                    </div>
+                    <div class="border p-3 rounded bg-purple-50">
+                        <strong>🎓 Демонстрирую экспертизу</strong> - открывается после 8 успешных покупок
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div class="border p-3 rounded bg-yellow-50">
+                        <strong>📊 Ссылаюсь на рынок</strong> - открывается после 5 успешных покупок
+                    </div>
+                    <div class="border p-3 rounded bg-red-50">
+                        <strong>😠 Агрессивно торгуюсь</strong> - открывается после 15 успешных покупок
+                    </div>
+                    <div class="border p-3 rounded bg-blue-50">
+                        <strong>⚓ Начинаю с низкой цены</strong> - открывается после 2 успешных покупок
+                    </div>
+                    <div class="border p-3 rounded bg-blue-50">
+                        <strong>🤐 Стою и жду</strong> - базовая тактика
+                    </div>
+                </div>
+
+                <div class="bg-yellow-50 p-3 rounded border border-yellow-200 mt-4">
+                    <strong>🌟 Золотой час:</strong> Первая сделка каждого дня проходит без конкурентов!
+                </div>
+
+                <div class="bg-red-50 p-3 rounded border border-red-200 mt-4">
+                    <strong>⚠️ Внимание:</strong> Продавцы имеют разный характер и терпение. Некоторые тактики могут вызвать негативную реакцию!
+                </div>
+            </div>
+        </div>
+
+        <!-- Экспертиза предметов -->
+        <div id="expertise" class="mb-8">
+            <h3 class="text-2xl font-bold mb-4">🔍 Экспертиза предметов</h3>
+            <div class="bg-white p-4 rounded-lg shadow">
+                <p class="mb-4">После покупки предмет требует экспертизы для определения его реальной стоимости и подлинности.</p>
+
+                <h4 class="font-bold mb-3">💎 Методы исследования</h4>
+                <div class="space-y-3 mb-4">
+                    <div class="flex items-start">
+                        <span class="text-2xl mr-3">👁️</span>
+                        <div>
+                            <strong>Визуальный осмотр</strong> (10⚡) - базовая информация о дефектах и возрасте
+                            <div class="text-xs text-gray-600">Требуется 1 уровень навыка, до 1 использования</div>
+                        </div>
+                    </div>
+                    <div class="flex items-start">
+                        <span class="text-2xl mr-3">🔍</span>
+                        <div>
+                            <strong>Лупа</strong> (20⚡) - детальное изучение клейм и мелких дефектов
+                            <div class="text-xs text-gray-600">Требуется 7 уровень навыка, до 2 использований</div>
+                        </div>
+                    </div>
+                    <div class="flex items-start">
+                        <span class="text-2xl mr-3">💡</span>
+                        <div>
+                            <strong>УФ-лампа</strong> (30⚡) - выявление следов реставрации
+                            <div class="text-xs text-gray-600">Требуется 13 уровень навыка, до 3 использований</div>
+                        </div>
+                    </div>
+                    <div class="flex items-start">
+                        <span class="text-2xl mr-3">🧪</span>
+                        <div>
+                            <strong>Тестирование</strong> (30⚡) - анализ материалов и состава
+                            <div class="text-xs text-gray-600">Требуется 4 уровень навыка, до 1 использования</div>
+                        </div>
+                    </div>
+                    <div class="flex items-start">
+                        <span class="text-2xl mr-3">👨‍🔬</span>
+                        <div>
+                            <strong>Эксперт</strong> (40⚡) - полное заключение специалиста
+                            <div class="text-xs text-gray-600">Требуется 16 уровень навыка</div>
+                        </div>
+                    </div>
+                    <div class="flex items-start">
+                        <span class="text-2xl mr-3">💻</span>
+                        <div>
+                            <strong>Интернет-поиск</strong> (15⚡) - поиск аналогов и мнений в сети
+                            <div class="text-xs text-gray-600">Доступен с начала, до 3 использований</div>
+                        </div>
+                    </div>
+                </div>
+
+                <h4 class="font-bold mb-3">🎨 Рабочий стол экспертизы</h4>
+                <p class="mb-3">Используйте специальный рабочий стол для детального исследования предметов. Разные зоны стола соответствуют различным методам исследования.</p>
+
+                <h4 class="font-bold mt-4 mb-3">🎯 Оценка параметров</h4>
+                <p class="mb-3">После исследований нужно определить три параметра:</p>
+                <ul class="list-disc list-inside space-y-2 mb-4">
+                    <li><strong>Подлинность</strong> - подлинник или подделка</li>
+                    <li><strong>Стоимость</strong> - реальная цена предмета (допуск ±20%)</li>
+                    <li><strong>Возраст</strong> - точный возраст в годах (допуск ±5 лет)</li>
+                </ul>
+
+                <div class="bg-green-50 p-3 rounded border border-green-200">
+                    <strong>🏆 Бонусы репутации и опыта:</strong><br>
+                    • 1 угаданный параметр = +1 репутации, +1 опыт навыка<br>
+                    • 2 угаданных параметра = +3 репутации, +2 опыт навыка<br>
+                    • 3 угаданных параметра = +6 репутации, +3 опыт навыка
+                </div>
+            </div>
+        </div>
+
+        <!-- Реставрация -->
+        <div id="restoration" class="mb-8">
+            <h3 class="text-2xl font-bold mb-4">🛠️ Реставрация</h3>
+            <div class="bg-white p-4 rounded-lg shadow">
+                <p class="mb-3">Предметы с дефектами можно отреставрировать для повышения их стоимости.</p>
+
+                <h4 class="font-bold mb-3">📈 Система прогресса реставрации</h4>
+                <p class="mb-3">Каждый дефект имеет свой прогресс восстановления. Успешная реставрация увеличивает прогресс, неудачная может ухудшить состояние предмета.</p>
+
+                <h4 class="font-bold mb-3">🎓 Варианты реставрации</h4>
+                <ul class="list-disc list-inside space-y-2 mb-4">
+                    <li><strong>Самостоятельная</strong> - дешевле, но есть риск неудачи. Стоимость снижается с каждой попыткой.</li>
+                    <li><strong>Городская мастерская</strong> - надежно, но дорого. 85% успеха.</li>
+                    <li><strong>Элитная студия</strong> - максимальное качество, высокая цена. 95% успеха.</li>
+                    <li><strong>Профессиональная</strong> - лучший результат, без штрафа к стоимости.</li>
+                </ul>
+
+                <div class="bg-blue-50 p-3 rounded border border-blue-200">
+                    <strong>💡 Совет:</strong> Реставрируйте только ценные предметы, где восстановление окупит затраты.
+                </div>
+            </div>
+        </div>
+
+        <!-- Продажа предметов -->
+        <div id="selling" class="mb-8">
+            <h3 class="text-2xl font-bold mb-4">💼 Продажа предметов</h3>
+            <div class="bg-white p-4 rounded-lg shadow">
+                <h4 class="font-bold mb-3">📱 Каналы продажи</h4>
+                
+                <div class="space-y-4">
+                    <div class="border-l-4 border-blue-500 pl-4">
+                        <h5 class="font-bold">📱 Авито</h5>
+                        <p><strong>Срок:</strong> 15 дней<br>
+                        <strong>Особенности:</strong> Ручная установка цены, предложения от покупателей<br>
+                        <strong>Налог:</strong> 1000р за перевыставление</p>
+                    </div>
+
+                    <div class="border-l-4 border-purple-500 pl-4">
+                        <h5 class="font-bold">🔨 Аукцион</h5>
+                        <p><strong>Срок:</strong> 15 дней<br>
+                        <strong>Особенности:</strong> Только для подлинников, стартовая цена 5000р<br>
+                        <strong>Комиссия:</strong> 15%<br>
+                        <strong>Стоимость выставления:</strong> 1000р</p>
+                    </div>
+
+                    <div class="border-l-4 border-green-500 pl-4">
+                        <h5 class="font-bold">👤 Постоянный клиент</h5>
+                        <p><strong>Требования:</strong> 30 репутации и 3 уровень навыка<br>
+                        <strong>Преимущества:</strong> 90-110% от реальной цены, быстрая продажа</p>
+                    </div>
+
+                    <div class="border-l-4 border-orange-500 pl-4">
+                        <h5 class="font-bold">🏪 Комиссионка</h5>
+                        <p><strong>Срок:</strong> Мгновенно<br>
+                        <strong>Цена:</strong> 20-30% от реальной стоимости<br>
+                        <strong>Особенности:</strong> Не все предметы принимаются</p>
+                    </div>
+                </div>
+
+                <div class="bg-red-50 p-3 rounded border border-red-200 mt-4">
+                    <strong>⚠️ Риск мошенничества:</strong> При продаже подделки за подлинник на Авито возможен возврат с пеней!
+                </div>
+            </div>
+        </div>
+
+        <!-- Система навыков -->
+        <div id="skills" class="mb-8">
+            <h3 class="text-2xl font-bold mb-4">📚 Система навыков</h3>
+            <div class="bg-white p-4 rounded-lg shadow">
+                <p class="mb-4">Навыки прокачиваются автоматически при накоплении слов в названиях предметов в инвентаре. Каждое слово в названии дает 1 очко опыта в соответствующей категории.</p>
+
+                <h4 class="font-bold mb-3">📈 Уровни навыков (18 уровней)</h4>
+                <ul class="list-disc list-inside space-y-2 mb-4">
+                    <li><strong>Уровни 1-6:</strong> Доступ к базовым методам экспертизы</li>
+                    <li><strong>Уровни 7-13:</strong> Доступ к расширенным методам экспертизы</li>
+                    <li><strong>Уровни 14-18:</strong> Доступ к профессиональным методам</li>
+                </ul>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div class="border p-3 rounded">
+                        <h5 class="font-bold mb-2">🏺 Фарфор</h5>
+                        <ul class="text-sm space-y-1">
+                            <li>Ур. 1: Видны дефекты</li>
+                            <li>Ур. 7: Лупа (2 использования)</li>
+                            <li>Ур. 13: УФ-лампа (3 использования)</li>
+                            <li>Ур. 16: Консультация эксперта</li>
+                        </ul>
+                    </div>
+                    <div class="border p-3 rounded">
+                        <h5 class="font-bold mb-2">🔧 Металл</h5>
+                        <ul class="text-sm space-y-1">
+                            <li>Ур. 1: Видны дефекты</li>
+                            <li>Ур. 4: Тестирование (1 использование)</li>
+                            <li>Ур. 7: Лупа (2 использования)</li>
+                            <li>Ур. 16: Консультация эксперта</li>
+                        </ul>
+                    </div>
+                    <div class="border p-3 rounded">
+                        <h5 class="font-bold mb-2">🎨 Живопись</h5>
+                        <ul class="text-sm space-y-1">
+                            <li>Ур. 1: Видны дефекты</li>
+                            <li>Ур. 7: Лупа (2 использования)</li>
+                            <li>Ур. 13: УФ-лампа (3 использования)</li>
+                            <li>Ур. 16: Консультация эксперта</li>
+                        </ul>
+                    </div>
+                    <div class="border p-3 rounded">
+                        <h5 class="font-bold mb-2">📚 Книги</h5>
+                        <ul class="text-sm space-y-1">
+                            <li>Ур. 1: Видны дефекты</li>
+                            <li>Ур. 4: Тестирование (1 использование)</li>
+                            <li>Ур. 7: Лупа (2 использования)</li>
+                            <li>Ур. 16: Консультация эксперта</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="bg-green-50 p-3 rounded border border-green-200">
+                    <strong>💡 Источники опыта:</strong><br>
+                    • Каждое слово в названии предмета в инвентаре<br>
+                    • Успешная экспертиза (+1-3 опыта за угаданные параметры)<br>
+                    • Образцы для экспертизы накапливают опыт даже если не продаются
+                </div>
+            </div>
+        </div>
+
+        <!-- Система образцов для экспертизы -->
+        <div id="samples" class="mb-8">
+            <h3 class="text-2xl font-bold mb-4">🧠 Система образцов для экспертизы</h3>
+            <div class="bg-white p-4 rounded-lg shadow">
+                <p class="mb-3">Помечайте дешёвые предметы как образцы для экспертизы, чтобы накапливать опыт и улучшать свои навыки без необходимости продажи.</p>
+
+                <h4 class="font-bold mb-3">🎯 Как работать с образцами</h4>
+                <ul class="list-disc list-inside space-y-2 mb-4">
+                    <li>Нажмите кнопку <strong>🧠 Образец</strong> на карточке предмета в инвентаре</li>
+                    <li>Предмет получит бейджик "ОБРАЗЕЦ" и будет учитываться при подсчёте опыта</li>
+                    <li>Используйте кнопку фильтра <strong>🧠 Показать/Скрыть образцы</strong> для управления отображением</li>
+                    <li>Образцы можно продать, но вы потеряете накопленный ими опыт</li>
+                </ul>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div class="bg-yellow-50 p-4 rounded-lg">
+                        <h5 class="font-bold mb-2">✅ Преимущества</h5>
+                        <ul class="text-sm space-y-1">
+                            <li>Накопление опыта без продажи предметов</li>
+                            <li>Возможность скрыть "хлам" из инвентаря</li>
+                            <li>Постепенное улучшение навыков экспертизы</li>
+                            <li>Доступ к более сложным методам исследования</li>
+                        </ul>
+                    </div>
+                    <div class="bg-red-50 p-4 rounded-lg">
+                        <h5 class="font-bold mb-2">⚠️ Предупреждения</h5>
+                        <ul class="text-sm space-y-1">
+                            <li>Продажа образца приводит к потере опыта</li>
+                            <li>Перед продажей потребуется подтверждение</li>
+                            <li>Образцы занимают место в инвентаре</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="bg-blue-50 p-3 rounded border border-blue-200">
+                    <strong>💡 Стратегия:</strong> Сохраняйте дешёвые предметы как образцы для быстрой прокачки навыков. Чем больше у вас образцов, тем выше навык и тем больше инструментов экспертизы становится доступно.
+                </div>
+            </div>
+        </div>
+
+        <!-- Советы и стратегии -->
+        <div id="tips" class="mb-8">
+            <h3 class="text-2xl font-bold mb-4">💡 Советы и стратегии</h3>
+            <div class="bg-white p-4 rounded-lg shadow">
+                <div class="space-y-4">
+                    <div class="flex items-start">
+                        <span class="text-2xl mr-3">💰</span>
+                        <div>
+                            <strong>Начинайте с дешевых предметов</strong><br>
+                            Покупайте недорогие вещи для прокачки навыков и изучения механик
+                        </div>
+                    </div>
+
+                    <div class="flex items-start">
+                        <span class="text-2xl mr-3">🧠</span>
+                        <div>
+                            <strong>Создавайте коллекцию образцов</strong><br>
+                            Помечайте дешёвые предметы как образцы для накопления опыта и улучшения навыков
+                        </div>
+                    </div>
+
+                    <div class="flex items-start">
+                        <span class="text-2xl mr-3">🔍</span>
+                        <div>
+                            <strong>Используйте золотой час</strong><br>
+                            Первая сделка дня проходит без конкурентов - выбирайте самый выгодный предмет
+                        </div>
+                    </div>
+
+                    <div class="flex items-start">
+                        <span class="text-2xl mr-3">🛠️</span>
+                        <div>
+                            <strong>Реставрируйте выборочно</strong><br>
+                            Восстанавливайте только ценные предметы, где реставрация окупится
+                        </div>
+                    </div>
+
+                    <div class="flex items-start">
+                        <span class="text-2xl mr-3">📊</span>
+                        <div>
+                            <strong>Диверсифицируйте продажи</strong><br>
+                            Используйте разные каналы: Авито для экспериментов, аукцион для ценных подлинников
+                        </div>
+                    </div>
+
+                    <div class="flex items-start">
+                        <span class="text-2xl mr-3">🎯</span>
+                        <div>
+                            <strong>Следите за репутацией</strong><br>
+                            Точно определяйте подлинность - это ключ к доступу к лучшим каналам продаж
+                        </div>
+                    </div>
+
+                    <div class="flex items-start">
+                        <span class="text-2xl mr-3">⚡</span>
+                        <div>
+                            <strong>Управляйте вниманием</strong><br>
+                            Не тратьте всё внимание на один предмет. Используйте несколько методов экспертизы постепенно
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-blue-50 p-4 rounded border border-blue-200 mt-4">
+                    <h4 class="font-bold mb-2">🎮 Режимы игры</h4>
+                    <p>Нажмите на сердечко ❤️ внизу экрана для переключения между режимами:</p>
+                    <ul class="list-disc list-inside mt-2">
+                        <li><strong>Режим тестера</strong> (❤️) - полная информация о предметах, правдивость осколков знаний</li>
+                        <li><strong>Режим игрока</strong> (🤍) - ограниченная информация, большая сложность, реалистичный опыт</li>
+                    </ul>
+                </div>
+
+                <div class="bg-purple-50 p-4 rounded border border-purple-200 mt-4">
+                    <h4 class="font-bold mb-2">🔄 Тактики торга</h4>
+                    <p>Открывайте новые тактики, совершая успешные покупки:</p>
+                    <ul class="list-disc list-inside mt-2">
+                        <li>2 покупки: "Начинаю с низкой цены"</li>
+                        <li>3 покупки: "Указываю на дефекты"</li>
+                        <li>5 покупок: "Ссылаюсь на рынок"</li>
+                        <li>8 покупок: "Демонстрирую экспертизу"</li>
+                        <li>15 покупок: "Агрессивно торгуюсь"</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Контактная информация -->
+        <div class="text-center text-gray-600 mt-8">
+            <p>Удачи в торговле! Помните: в антикварном бизнесе знание - это деньги.</p>
+            <p class="text-sm mt-2">v0.81 PRO | Сделано с ❤️ для ценителей старины</p>
+        </div>
+    </div>
+</div>
+<!-- Вставьте этот код в раздел с вкладками рынка, после заголовка "Барахолка" -->
+<div id="content-market" class="p-3 flex-1 overflow-y-auto">
+    <div class="mb-4">
+        <!-- День прижат к верху -->
+        <div class="flex items-start justify-between mb-2">
+            <h2 class="text-xl font-bold">День <span id="marketDay">1</span></h2>
+        </div>
+        
+        <!-- Кнопки на всю ширину -->
+        <div class="flex flex-col md:flex-row gap-2 w-full">
+            <button onclick="toggleMarketView()" id="marketViewToggle" 
+                    class="w-full bg-gradient-to-r from-gray-500 to-gray-700 text-white px-4 py-3 rounded-lg font-semibold hover:shadow-lg transition flex items-center justify-center gap-2">
+                🚶 <span id="marketViewText">Прогуляться</span>
+            </button>
+            <button onclick="nextDay()" 
+                    class="w-full bg-gradient-to-r from-purple-500 to-indigo-600 text-white px-4 py-3 rounded-lg font-semibold hover:shadow-lg transition flex items-center justify-center gap-2">
+                ⏭️ Следующий день (-500р)
+            </button>
+        </div>
+    </div>
+    
+    <!-- Существующий вид рынка (по умолчанию видимый) -->
+    <div id="traditional-market" class="transition-all duration-300">
+        <div id="eventNotification" class="mb-4"></div>
+        <div id="goldenHourNotification" class="mb-4"></div>
+        <div id="marketItems" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4"></div>
+    </div>
+    
+    <!-- Новый вид рынка (изначально скрыт) -->
+    <div id="walking-market" class="hidden transition-all duration-300">
+      
+        <!-- Контейнер для нового рынка будет заполняться динамически -->
+        <div id="new-market-view" class="market-view-container"></div>
+    </div>
+</div>
+
+            <div id="content-inventory" class="p-3 hidden flex-1 overflow-y-auto">
+                <h2 class="text-2xl font-bold mb-4">Ваш инвентарь</h2>
+                <div id="inventoryItems" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+                <div id="emptyInventory" class="text-center text-gray-500 py-12">
+                    Ваш инвентарь пуст. Купите что-нибудь на рынке!
+                </div>
+            </div>
+
+            <div id="content-selling" class="p-3 hidden flex-1 overflow-y-auto">
+                <h2 class="text-2xl font-bold mb-4">Активные продажи</h2>
+                <div id="sellingItems" class="space-y-4"></div>
+                <div id="emptySelling" class="text-center text-gray-500 py-12">
+                    У вас нет активных продаж. Выставьте предметы на продажу!
+                </div>
+            </div>
+
+          <div id="content-knowledge" class="p-3 hidden flex-1 overflow-y-auto">
+                <h2 class="text-2xl font-bold mb-4">База знаний</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="skillsDisplay"></div>
+            </div>
+
+            <div id="content-stats" class="p-6 hidden flex-1 overflow-y-auto">
+                <h2 class="text-2xl font-bold mb-4">Статистика</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                    <div class="bg-blue-50 p-4 rounded-lg"><div class="text-sm text-gray-600">Куплено</div><div class="text-3xl font-bold" id="stat-bought">0</div></div>
+                    <div class="bg-green-50 p-4 rounded-lg"><div class="text-sm text-gray-600">Продано</div><div class="text-3xl font-bold" id="stat-sold">0</div></div>
+                    <div class="bg-purple-50 p-4 rounded-lg"><div class="text-sm text-gray-600">Прибыль</div><div class="text-3xl font-bold" id="stat-profit">0р</div></div>
+                    <div class="bg-orange-50 p-4 rounded-lg"><div class="text-sm text-gray-600">Дней</div><div class="text-3xl font-bold" id="stat-days">0</div></div>
+                </div>
+                
+                <div class="mt-6 p-4 bg-gradient-to-r from-purple-50 to-indigo-50 rounded-lg mb-6">
+                    <h3 class="font-bold mb-2">🎯 Цель: 100,000р + 50 репутации</h3>
+                    <div class="w-full bg-gray-200 rounded-full h-4 mb-2">
+                        <div id="progress-money" class="bg-gradient-to-r from-green-400 to-green-600 h-4 rounded-full transition-all" style="width: 10%"></div>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-4">
+                        <div id="progress-reputation" class="bg-gradient-to-r from-yellow-400 to-orange-500 h-4 rounded-full transition-all" style="width: 20%"></div>
+                    </div>
+                </div>
+
+                <h3 class="text-xl font-bold mb-4">📋 История сделок</h3>
+                <div class="text-sm text-gray-600 mb-2">Кликните на сделку для подробностей</div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead class="bg-gray-100">
+                            <tr>
+                                <th class="p-2 text-left">Товар</th>
+                                <th class="p-2 text-right">Куплено</th>
+                                <th class="p-2 text-right">Продано</th>
+                                <th class="p-2 text-left">Канал</th>
+                                <th class="p-2 text-right">Профит</th>
+                            </tr>
+                        </thead>
+                        <tbody id="dealsLog"></tbody>
+                    </table>
+                    <div id="emptyDeals" class="text-center text-gray-500 py-8">Сделок пока нет</div>
+                </div>
+            </div>
+        </div>
+
+<!-- ЗАМЕНЯЕМ СТАРЫЙ ФУТЕР -->
+<div class="text-center text-white text-sm opacity-75 mt-2">
+    v0.95 | Made with
+    <button onclick="toggleGameMode()" class="heart-toggle ml-1 bg-transparent border-none cursor-pointer text-lg">
+        ❤️
+    </button>
+    <button onclick="resetGame()" class="ml-4 bg-red-500 hover:bg-red-600 text-white px-4 py-1 rounded">🔄 Новая игра</button>
+</div>
+    </div>
+
+    <!-- Модальное окно торга - ОБНОВЛЕННАЯ ВЕРСИЯ -->
+<div id="haggleModal" class="fixed inset-0 modal-backdrop flex items-center justify-center z-50 hidden">
+    <div class="bg-white rounded-lg shadow-2xl p-4 mx-2 max-h-[90vh] overflow-y-auto w-full max-w-md">
+        <!-- ЗАГОЛОВОК И ПРЕДМЕТ -->
+        <div class="text-center mb-3">
+            <div class="text-6xl mb-2" id="haggleItemIcon">🏺</div>
+            <h2 class="text-xl font-bold mb-1" id="haggleItemName">Трофейный штык</h2>
+        </div>
+
+        <!-- ПРОДАВЕЦ И РЕПЛИКА -->
+        <div class="border-2 border-gray-300 rounded-lg p-3 mb-3 bg-gray-50">
+            <div class="flex items-center gap-3 mb-2">
+                <div class="text-4xl" id="sellerIcon">⛏️</div>
+                <div class="flex-1">
+                    <div class="font-bold text-sm" id="sellerType">Опытный Андрей</div>
+                    <div class="text-xs text-gray-600" id="sellerSubtype">Продавец</div>
+                    <div id="sellerPatienceHearts" class="text-xl text-red-500">❤️❤️❤️❤️❤️</div>
+                </div>
+            </div>
+            <!-- РЕПЛИКА ПРОДАВЦА -->
+            <div id="sellerQuote" class="seller-quote text-sm bg-white p-2 rounded border border-gray-200">
+                *оглядываясь* Тихо... Вещь свежая, только с раскопа...
+            </div>
+        </div>
+
+        <!-- ЦЕНА И КОНКУРЕНТЫ -->
+        <div class="grid grid-cols-2 gap-2 mb-3">
+            <div class="text-center p-2 bg-green-50 rounded border">
+                <div class="text-xs text-gray-600">Цена</div>
+                <div class="text-lg font-bold text-green-600" id="currentPrice">1,450р</div>
+                <div class="text-xs text-gray-500">Начальная: <span id="askingPrice">2,800р</span></div>
+            </div>
+            <!-- В блоке цены и конкурентов заменяем текущий competitors блок: -->
+<div class="text-center p-2 bg-blue-50 rounded border border-blue-200">
+    <div class="text-xs text-gray-600 font-semibold mb-1">👥 Конкуренты</div>
+    <div id="competitors" class="competitors-container text-xs space-y-1 max-h-16 overflow-y-auto px-1">
+        <!-- Конкуренты будут заполнены динамически -->
+    </div>
+    <div class="text-xs text-gray-500 mt-1">
+        <span id="competitorsCount">0</span> покупателей
+    </div>
+</div>
+        </div>
+
+        <!-- ТАКТИКИ ТОРГА -->
+        <div class="mb-3">
+            <h3 class="font-bold mb-2 text-sm text-gray-600">Тактики торга</h3>
+            <div class="grid grid-cols-2 gap-2" id="tacticButtons">
+                <!-- Кнопки будут заполнены динамически -->
+            </div>
+        </div>
+
+        <!-- КНОПКИ ДЕЙСТВИЙ -->
+        <div class="flex gap-2">
+            <button onclick="acceptCurrentPrice()" 
+                    class="flex-1 bg-green-500 hover:bg-green-600 text-white py-3 rounded-lg font-semibold text-sm transition">
+                ✅ Купить за <span id="acceptPrice">1,450р</span>
+            </button>
+            <button onclick="closeHaggle()" 
+                    class="flex-1 bg-gray-500 hover:bg-gray-600 text-white py-3 rounded-lg font-semibold text-sm transition">
+                ❌ Уйти
+            </button>
+        </div>
+    </div>
+</div>
+
+<div id="expertiseModal" class="fixed inset-0 modal-backdrop flex items-center justify-center z-50 hidden">
+    <div class="bg-white rounded-lg shadow-2xl p-8 max-w-6xl mx-4 max-h-screen overflow-y-auto">
+        <!-- Заголовок и кнопка закрытия -->
+        <div class="flex justify-between items-center mb-4">
+            <div class="flex-1">
+                <h2 class="text-xl font-bold" id="expertiseItemName">Экспертиза</h2>
+                <div class="text-sm text-gray-600 mt-1" id="expertiseItemDesc">Предмет будет здесь</div>
+            </div>
+            
+            <!-- Индикатор внимания -->
+            <div class="flex items-center gap-2 ml-4">
+                <div class="flex flex-col items-center">
+                    <div id="attentionEye" class="text-2xl transition-all duration-300">👁️</div>
+                    <div id="attentionValue" class="text-xs font-bold bg-gray-200 px-2 py-1 rounded-full min-w-[40px] text-center">
+                        ${gameState.attention}
+                    </div>
+                </div>
+                <button onclick="closeExpertise()" class="text-gray-500 hover:text-gray-700 text-2xl leading-none ml-2">×</button>
+            </div>
+        </div>
+        
+        <!-- Методы исследования -->
+        <div class="mb-6">
+            <h3 class="font-bold mb-3 text-sm text-gray-600">Методы исследования</h3>
+            <div class="flex gap-2 flex-wrap" id="expertiseMethods"></div>
+        </div>
+        
+        <!-- 🆕 ИСПРАВЛЕННЫЙ БЛОК: ВИЗУАЛИЗАЦИЯ ЭКСПЕРТИЗЫ - ПОЛНОЭКРАННЫЙ КВАДРАТ -->
+    <!-- 🆕 ИСПРАВЛЕННЫЙ БЛОК: ВИЗУАЛИЗАЦИЯ ЭКСПЕРТИЗЫ - ПОЛНОЭКРАННЫЙ КВАДРАТ -->
+<div class="mb-6">
+    <h3 class="font-bold mb-3 text-sm text-gray-600">📐 Рабочий стол эксперта</h3>
+    
+    <!-- Контейнер для квадрата -->
+    <div class="relative w-full mx-auto expertise-square-container"
+         style="
+            height: min(50vh, 600px);
+            max-height: min(50vh, 600px);
+            min-height: min(50vh, 400px);
+         ">
+        
+        <!-- Квадрат с изображением стола -->
+        <div class="absolute inset-0 bg-gray-800 border-4 border-gray-900 rounded-xl overflow-hidden shadow-2xl">
+            <!-- Заглушка если изображение не загрузится -->
+            <div id="expertiseTableFallback" class="hidden absolute inset-0 flex-col items-center justify-center p-4 text-gray-300 bg-gray-900">
+                <div class="text-6xl mb-4">🖼️</div>
+                <div class="text-lg text-center mb-2">Не удалось загрузить изображение рабочего стола</div>
+                <div class="text-sm text-gray-400">table.png в корневой директории</div>
+            </div>
+            
+            <!-- Основное изображение -->
+            <img id="expertiseTableImage" 
+                 src="table.png" 
+                 alt="Рабочий стол для экспертизы"
+                 class="absolute inset-0 w-full h-full object-cover p-0"
+                 onload="document.getElementById('expertiseTableFallback').classList.add('hidden')"
+                 onerror="document.getElementById('expertiseTableFallback').classList.remove('hidden')">
+            
+            <!-- 🆕 Наложение для зон экспертизы -->
+            <div id="expertiseZonesOverlay" class="absolute inset-0 pointer-events-none">
+                <!-- Здесь будут зоны для клика -->
+            </div>
+            
+            <!-- 🆕 Наложение для предмета (будет использоваться позже) -->
+            <div id="expertiseItemOverlay" class="absolute inset-0 pointer-events-none">
+                <!-- Здесь будет предмет для экспертизы -->
+            </div>
+            
+            <!-- 🆕 Наложение для инструментов (будет использоваться позже) -->
+            <div id="expertiseToolsOverlay" class="absolute inset-0 pointer-events-none">
+                <!-- Здесь будут инструменты экспертизы -->
+            </div>
+        </div>
+    </div>
+    
+    <div class="text-xs text-gray-500 mt-2 text-center">
+        Рабочее пространство для детального исследования предмета
+    </div>
+</div>
+
+        <!-- Осколки знаний -->
+        <div class="mb-6">
+            <h3 class="font-bold mb-3 text-sm text-gray-600">💎 Осколки знания</h3>
+            <div id="shardsContainer" class="space-y-2 max-h-60 overflow-y-auto border rounded-lg p-4 bg-gray-50">
+                <div class="text-center text-gray-400 py-4 text-sm">Используйте методы исследования для получения осколков</div>
+            </div>
+        </div>
+        
+        <!-- Блок оценки (три поля) -->
+        <div class="border-t pt-4">
+            <h3 class="font-bold mb-2">Ваша оценка</h3>
+            <div class="grid grid-cols-3 gap-4 mb-4">
+                <div>
+                    <label class="block text-sm mb-1">Подлинность</label>
+                    <select id="authenticityGuess" class="w-full border rounded p-2">
+                        <option value="">Не определено</option>
+                        <option value="true">Подлинник</option>
+                        <option value="false">Подделка</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm mb-1">Оценочная стоимость</label>
+                    <input type="number" id="valueGuess" class="w-full border rounded p-2" placeholder="Введите сумму">
+                </div>
+                <div>
+                    <label class="block text-sm mb-1">Предполагаемый возраст</label>
+                    <input type="number" id="ageGuess" class="w-full border rounded p-2" placeholder="Введите возраст">
+                </div>
+            </div>
+            <div class="flex gap-2">
+                <button onclick="submitExpertise()" class="flex-1 bg-gradient-to-r from-purple-500 to-indigo-600 text-white py-3 rounded-lg font-semibold hover:shadow-lg transition">
+                    📋 Завершить экспертизу
+                </button>
+                <button onclick="closeExpertise()" class="flex-1 bg-gray-500 text-white py-3 rounded-lg font-semibold hover:shadow-lg transition">
+                    ❌ Отмена
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+    <!-- Модальное окно продажи -->
+    <!-- АЛЬТЕРНАТИВНЫЙ ВАРИАНТ - более компактный -->
+<div id="sellModal" class="fixed inset-0 modal-backdrop flex items-center justify-center z-50 hidden">
+    <div class="bg-white rounded-lg shadow-2xl mx-4 max-w-2xl w-full max-h-[85vh] overflow-hidden flex flex-col">
+        <!-- КОМПАКТНЫЙ ЗАГОЛОВОК -->
+        <div class="flex-shrink-0 flex justify-between items-center p-4 border-b">
+            <div>
+                <h2 class="text-xl font-bold" id="sellItemName">Выбор канала продажи</h2>
+                <p class="text-sm text-gray-600 mt-1">Оцененная стоимость: <span id="sellItemValue" class="font-bold text-green-600"></span></p>
+            </div>
+            <button onclick="closeSell()" class="text-gray-500 hover:text-gray-700 text-2xl leading-none ml-4 flex-shrink-0">×</button>
+        </div>
+        
+        <!-- КАНАЛЫ ПРОДАЖИ С ПРОКРУТКОЙ -->
+        <div class="flex-1 overflow-y-auto p-4">
+            <div class="grid grid-cols-1 gap-3" id="sellChannels"></div>
+        </div>
+    </div>
+</div>
+
+    <!-- Модальное окно реставрации -->
+    <div id="restorationModal" class="fixed inset-0 modal-backdrop flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-lg shadow-2xl p-8 max-w-4xl mx-4 max-h-screen overflow-y-auto">
+            <div class="flex justify-between items-start mb-4">
+                <h2 class="text-2xl font-bold" id="restorationItemName">Реставрация</h2>
+                <button onclick="closeRestoration()" class="text-gray-500 hover:text-gray-700 text-3xl leading-none">×</button>
+            </div>
+            <div id="restorationContent">
+                <!-- Контент будет заполнен динамически -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ==============================================
+        // ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ И КОНСТАНТЫ
+        // ==============================================
+        let gameState = {
+            money: 10000,
+            reputation: 10,
+            day: 1,
+            officeLevel: 0,
+ attention: 100,
+            inventory: [],
+            marketItems: [],
+            sellingItems: [],
+            isTesterMode: false,
+            skills: { porcelain: 0, metal: 0, painting: 0, books: 0, militaria: 0 },
+            stats: { bought: 0, sold: 0, profit: 0 },
+            dealsLog: [],
+            firstDealToday: true,
+            eventCounter: 0,
+expertiseShards: [],       // Осколки знаний для текущей экспертизы
+successfulPurchases: 0,
+    unlockedTactics: [], // Хранит ID открытых тактик
+    nextTacticIndex: 0, // Индекс следующей тактики для открытия
+    shardIdCounter: 0
+        };
+
+        let currentHaggle = null;
+        let currentExpertise = null;
+        let currentSell = null;
+        let currentRestorationItem = null;
+
+        // Иконки категорий
+        const CATEGORY_ICONS = {
+            porcelain: "🏺",
+            metal: "🔧", 
+            painting: "🎨",
+            books: "📚",
+            militaria: "🎖️"
+        };
+
+
+// Переменная для отслеживания текущего вида рынка
+let currentMarketView = 'traditional'; // 'traditional' или 'walking'
+
+
+// MARKS_BY_PERIOD moved to constants.js;
+
+// ДЕТАЛЬНЫЕ ИКОНКИ ДЛЯ КАЖДОГО ТОВАРА
+// DETAILED_ICONS moved to constants.js;
+
+const RESTORATION_TYPES = {
+    professional: { 
+        name: "Профессиональная реставрация", 
+        chance: 0.15, 
+        realValuePenalty: 0.0, 
+        sellerVisibility: 0.0,
+        display: "профессионально отреставрирован"
+    },
+    quality: { 
+        name: "Качественная реставрация", 
+        chance: 0.25, 
+        realValuePenalty: 0.15, 
+        sellerVisibility: 0.25,
+        display: "качественно отреставрирован"
+    },
+    medium: { 
+        name: "Средняя реставрация", 
+        chance: 0.35, 
+        realValuePenalty: 0.30, 
+        sellerVisibility: 0.5,
+        display: "отреставрирован со средним качеством"
+    },
+    rough: { 
+        name: "Грубая реставрация", 
+        chance: 0.25, 
+        realValuePenalty: 0.60, 
+        sellerVisibility: 1.0,
+        display: "грубо отреставрирован"
+    }
+};
+
+const tactics = [
+    { id: "bluff_leave", name: "Делать вид что ухожу", icon: "🚶", reqSkill: 0 },
+    { id: "sympathy", name: "Давлю на жалость", icon: "😢", reqSkill: 0 },
+    { id: "point_defects", name: "Указать на «дефекты»", icon: "🔍", reqSkill: 0 }, // ⭐ ИЗМЕНЕНО
+    { id: "expert_talk", name: "Демонстрирую экспертизу", icon: "🎓", reqSkill: 2 },
+    { id: "market_analysis", name: "Ссылаюсь на рынок", icon: "📊", reqSkill: 0 },
+    { id: "aggressive_haggle", name: "Агрессивно торгуюсь", icon: "😠", reqSkill: 0 }, // ⭐ ПОСЛЕДНЯЯ
+    { id: "anchoring", name: "Начинаю с низкой цены", icon: "⚓", reqSkill: 0 },
+    { id: "silent_treatment", name: "Стою и жду", icon: "🤐", reqSkill: 0 } // ⭐ ПЕРВАЯ
+];
+
+
+
+
+// Extracted UI functions
+
+function formatMoney(amount) {
+            if (isNaN(amount)) return "0Р";
+            return amount.toLocaleString('ru-RU') + 'Р';
+        }
+
+function getWeekday(dayNumber) {
+    const weekdays = ['СБ', 'ВС', 'ПН', 'ВТ', 'СР', 'ЧТ', 'ПТ'];
+    return weekdays[(dayNumber - 1) % 7];
+}
+
+function showNotification(message, type = 'info') {
+            const container = document.getElementById('notificationContainer');
+            const colors = {
+                success: 'bg-green-100 border-green-500 text-green-800',
+                error: 'bg-red-100 border-red-500 text-red-800',
+                warning: 'bg-yellow-100 border-yellow-500 text-yellow-800',
+                info: 'bg-blue-100 border-blue-500 text-blue-800',
+                avito: 'bg-orange-100 border-orange-500 text-orange-800 avito-notification'
+            };
+
+            const notification = document.createElement('div');
+            notification.className = `notification ${colors[type]} border-2 rounded-lg p-4 mb-2 shadow-lg`;
+            notification.textContent = message;
+            container.appendChild(notification);
+
+            setTimeout(() => {
+                notification.remove();
+            }, type === 'avito' ? 8000 : 3000);
+        }
+function switchTab(tab) {
+    // Добавляем 'zones' в список всех вкладок
+    ['market', 'inventory', 'selling', 'knowledge', 'stats', 'help', 'zones'].forEach(t => {
+        const content = document.getElementById(`content-${t}`);
+        const tabButton = document.getElementById(`tab-${t}`);
+        
+        if (content) content.classList.add('hidden');
+        if (tabButton) {
+            tabButton.classList.remove('tab-active');
+            tabButton.classList.add('hover:bg-gray-100');
+        }
+    });
+    
+    // Показываем выбранную вкладку
+    const selectedContent = document.getElementById(`content-${tab}`);
+    const selectedTab = document.getElementById(`tab-${tab}`);
+    
+    if (selectedContent) selectedContent.classList.remove('hidden');
+    if (selectedTab) {
+        selectedTab.classList.add('tab-active');
+        selectedTab.classList.remove('hover:bg-gray-100');
+    }
+    
+    // Обновляем контент для каждой вкладки
+    if (tab === 'inventory') renderInventory();
+    if (tab === 'selling') renderSellingTab();
+    if (tab === 'knowledge') renderSkills();
+    if (tab === 'stats') renderStats();
+    if (tab === 'market') renderMarket();
+    if (tab === 'zones') initZonesConfigurator(); // Инициализируем конфигуратор зон
+}
+function updateDisplay() {
+    // Только обновляем то, что осталось после удаления шапки
+    // Обновляем день в заголовке рынка
+    const marketDayElement = document.getElementById('marketDay');
+    if (marketDayElement) {
+        marketDayElement.textContent = gameState.day;
+    }
+    
+    // Внимание обновляется в модальном окне экспертизы отдельно
+    // Полоска внимания в модальном окне экспертизы будет обновляться при вызове updateExpertiseAttentionDisplay()
+}
+
+function toggleDealDetails(rowId) {
+            const row = document.getElementById(rowId);
+            row.classList.toggle('hidden');
+        }
+
+function toggleDebugConsole() {
+    const console = document.getElementById('debugConsole');
+    console.classList.toggle('hidden');
+}
+
+
+function closeExpertise() {
+            document.getElementById('expertiseModal').classList.add('hidden');
+            currentExpertise = null;
+        }
+
+function closeSell() {
+            document.getElementById('sellModal').classList.add('hidden');
+            currentSell = null;
+        }
+
+function closeRestoration() {
+            document.getElementById('restorationModal').classList.add('hidden');
+            currentRestorationItem = null;
+        }
+
+
+
+// ==============================================
+// ФУНКЦИЯ ДЛЯ ЛУПЫ (ДОБАВЬТЕ ЭТУ СТРОКУ)
+// ==============================================
+
+// ==============================================
+// СИСТЕМА ГРАММАТИЧЕСКИХ РОДОВ
+// (ДОБАВЬ ПЕРЕД generateMarketItem)
+// ==============================================
+
+function determineGender(baseName) {
+    if (!baseName || typeof baseName !== 'string') return 'male';
+    
+    // Разбиваем на слова и берем последнее (главное) слово
+    const words = baseName.trim().split(' ');
+    const mainWord = words[words.length - 1].toLowerCase();
+    
+    if (!mainWord) return 'male';
+    
+    // Правила определения рода по окончанию
+    const femaleEndings = ['а', 'я', 'ь', 'ия', 'ка', 'га', 'жа', 'ша', 'ча', 'ща', 'ца', 'ва', 'ла', 'ра', 'та'];
+    const neuterEndings = ['о', 'е', 'ие', 'ье', 'мя', 'ко', 'го', 'жо'];
+    
+    // Проверяем женский род
+    for (const ending of femaleEndings) {
+        if (mainWord.endsWith(ending)) return 'female';
+    }
+    
+    // Проверяем средний род
+    for (const ending of neuterEndings) {
+        if (mainWord.endsWith(ending)) return 'neuter';
+    }
+    
+    // По умолчанию - мужской род (включая множественное число)
+    return 'male';
+}
+function adaptModifierToGender(modifier, targetGender) {
+    if (!modifier) return modifier;
+    
+    // Извлекаем строку модификатора в зависимости от формата
+    let modifierStr;
+    if (typeof modifier === 'string') {
+        modifierStr = modifier;
+    } else if (modifier.display) {
+        modifierStr = modifier.display;
+    } else if (modifier.original) {
+        modifierStr = modifier.original;
+    } else {
+        modifierStr = String(modifier);
+    }
+    
+    // Если модификатор состоит из нескольких слов, обрабатываем только первое
+    const words = modifierStr.split(' ');
+    if (words.length === 0) return modifier;
+    
+    const firstWord = words[0];
+    let transformedFirstWord = firstWord;
+    
+    // УЛУЧШЕННЫЕ ПРАВИЛА ПРЕОБРАЗОВАНИЯ ОКОНЧАНИЙ
+    const transformations = {
+        'male': {
+            // женский → мужской
+            'ая$': 'ый', 'ое$': 'ый', 'ые$': 'ый',
+            'яя$': 'ий', 'ее$': 'ий', 'ие$': 'ий',
+            'ай$': 'ый', 'яй$': 'ий',
+            // Исправление специфических случаев
+            'енья$': 'ений', 'ния$': 'ний', 'ья$': 'ий'
+        },
+        'female': {
+            // мужской/средний → женский
+            'ый$': 'ая', 'ой$': 'ая', 'ое$': 'ая',
+            'ий$': 'яя', 'ое$': 'яя', 'ие$': 'яя',
+            'ай$': 'ая', 'яй$': 'яя',
+            // Исправление специфических случаев
+            'еньий$': 'еньяя', 'ний$': 'няя', 'ий$': 'яя',
+            'ской$': 'ская', 'ный$': 'ная', 'овой$': 'овая'
+        },
+        'neuter': {
+            // мужской/женский → средний
+            'ый$': 'ое', 'ой$': 'ое', 'ая$': 'ое',
+            'ий$': 'ее', 'яя$': 'ее', 'ие$': 'ее',
+            'ай$': 'ое', 'яй$': 'ее',
+            // Исправление специфических случаев
+            'еньяя$': 'еньее', 'няя$': 'нее', 'яя$': 'ее',
+            'ская$': 'ское', 'ная$': 'ное', 'овая$': 'овое'
+        }
+    };
+    
+    const rules = transformations[targetGender];
+    if (rules) {
+        // Сортируем правила по длине (от самых длинных к коротким) для приоритетной обработки
+        const sortedRules = Object.entries(rules).sort((a, b) => b[0].length - a[0].length);
+        
+        for (const [pattern, replacement] of sortedRules) {
+            const regex = new RegExp(pattern);
+            if (regex.test(transformedFirstWord)) {
+                transformedFirstWord = transformedFirstWord.replace(regex, replacement);
+                break; // Применили одно преобразование - выходим
+            }
+        }
+        
+        // ДОПОЛНИТЕЛЬНЫЕ ИСПРАВЛЕНИЯ ДЛЯ ЧАСТЫХ ОШИБОК
+        if (targetGender === 'male') {
+            // Исправление "Кузнецовскый" → "Кузнецовский"
+            if (transformedFirstWord.endsWith('скый') && !transformedFirstWord.endsWith('ийскый')) {
+                transformedFirstWord = transformedFirstWord.replace('скый', 'ский');
+            }
+            // Исправление "пугающый" → "пугающий"
+            if (transformedFirstWord.endsWith('щый')) {
+                transformedFirstWord = transformedFirstWord.replace('щый', 'щий');
+            }
+        }
+        
+        if (targetGender === 'female') {
+            // Исправление "прижизненняя" → "прижизненная"
+            if (transformedFirstWord.endsWith('ненняя')) {
+                transformedFirstWord = transformedFirstWord.replace('ненняя', 'ненная');
+            }
+            // Исправление "мистически неприятная" → оставляем как есть (это наречие + прилагательное)
+        }
+        
+        if (targetGender === 'neuter') {
+            // Исправление для среднего рода
+            if (transformedFirstWord.endsWith('неющее')) {
+                transformedFirstWord = transformedFirstWord.replace('неющее', 'ное');
+            }
+        }
+    }
+    
+    // Собираем обратно
+    words[0] = transformedFirstWord;
+    const resultStr = words.join(' ');
+    
+    // Возвращаем в том же формате, в котором получили
+    if (typeof modifier === 'string') {
+        return resultStr;
+    } else if (modifier.display) {
+        return { ...modifier, display: resultStr };
+    } else if (modifier.original) {
+        return { ...modifier, original: resultStr };
+    } else {
+        return { ...modifier, display: resultStr };
+    }
+}
+
+function getCategoryName(category) {
+    const names = {
+        porcelain: "Фарфор",
+        metal: "Металл",
+        painting: "Живопись",
+        books: "Книги",
+        militaria: "Милитари"
+    };
+    return names[category] || category;
+}
+
+function countWordsInSample(item) {
+    return getTrueName(item).split(' ').length;
+}
+
+function showSellSampleConfirmation(item, callback) {
+    const wordCount = countWordsInSample(item);
+    const categoryName = getCategoryName(item.category);
+    
+    const modal = document.createElement('div');
+    modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+    modal.innerHTML = `
+        <div class="bg-white rounded-lg shadow-2xl p-6 mx-4 max-w-md w-full">
+            <div class="text-center mb-4">
+                <div class="text-4xl mb-2">🧠</div>
+                <h2 class="text-xl font-bold mb-4">Внимание: Вы продаёте образец для экспертизы!</h2>
+                
+                <div class="bg-yellow-50 border-2 border-yellow-200 rounded-lg p-4 mb-4 text-left">
+                    <div class="font-bold text-yellow-800 mb-2">📊 Потеря опыта:</div>
+                    <div class="text-lg font-bold text-center mb-2">-${wordCount} слов в категории "${categoryName}"</div>
+                    
+                    <div class="text-sm text-gray-700 mt-3">
+                        <p class="mb-2">🔍 <strong>Чем больше образцов в вашей коллекции:</strong></p>
+                        <ul class="list-disc pl-4 space-y-1">
+                            <li>Тем выше ваш навык экспертизы</li>
+                            <li>Тем больше инструментов исследования доступно</li>
+                            <li>Тем точнее ваши оценки подлинности и стоимости</li>
+                            <li>Каждое слово в названии предмета повышает опыт</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="flex gap-3">
+                    <button onclick="window.confirmSellSample(true)" 
+                            class="flex-1 bg-red-500 hover:bg-red-600 text-white py-3 rounded-lg font-semibold">
+                        💸 Всё равно продать
+                    </button>
+                    <button onclick="window.confirmSellSample(false)" 
+                            class="flex-1 bg-gray-500 hover:bg-gray-600 text-white py-3 rounded-lg font-semibold">
+                        ❌ Отмена
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    // Глобальная функция для обработки подтверждения
+    window.confirmSellSample = function(shouldSell) {
+        modal.remove();
+        if (shouldSell && callback) {
+            callback();
+        }
+        delete window.confirmSellSample;
+    };
+}
+
+
+// Функция для тестирования проблемных случаев
+function testProblematicCases() {
+    const testCases = [
+        { modifier: "Кузнецовский", gender: "male", expected: "Кузнецовский" },
+        { modifier: "пугающий", gender: "male", expected: "пугающий" },
+        { modifier: "прижизненный", gender: "female", expected: "прижизненная" },
+        { modifier: "мистически неприятный", gender: "female", expected: "мистически неприятная" },
+        { modifier: "с золотой каймой", gender: "female", expected: "с золотой каймой" }, // не должно меняться
+        { modifier: "золотой", gender: "female", expected: "золотая" }
+    ];
+    
+    console.log("=== ТЕСТИРОВАНИЕ ПРОБЛЕМНЫХ СЛУЧАЕВ ===");
+    testCases.forEach(test => {
+        const result = adaptModifierToGender(test.modifier, test.gender);
+        const status = result === test.expected ? "✓" : "✗";
+        console.log(`${status} "${test.modifier}" (${test.gender}) → "${result}" (ожидалось: "${test.expected}")`);
+    });
+}
+
+
+
+// Вызови testProblematicCases() в консоли браузера для проверки
+
+
+function migrateExistingItemsGender() {
+    let migratedCount = 0;
+    
+    // Миграция для инвентаря
+    if (gameState.inventory && Array.isArray(gameState.inventory)) {
+        gameState.inventory.forEach(item => {
+            if (!item.gender) {
+                item.gender = determineGender(item.baseName);
+                migratedCount++;
+                
+                // Применяем преобразование к модификаторам отображения
+                if (item.modifiersDisplay && Array.isArray(item.modifiersDisplay)) {
+                    item.modifiersDisplay = item.modifiersDisplay.map(mod => 
+                        adaptModifierToGender(mod, item.gender)
+                    );
+                }
+                
+                // Применяем преобразование к основным модификаторам
+                if (item.modifiers && Array.isArray(item.modifiers)) {
+                    item.modifiers = item.modifiers.map(mod => 
+                        adaptModifierToGender(mod, item.gender)
+                    );
+                }
+            }
+        });
+    }
+    
+    // Миграция для предметов на продаже
+    if (gameState.sellingItems && Array.isArray(gameState.sellingItems)) {
+        gameState.sellingItems.forEach(item => {
+            if (!item.gender) {
+                item.gender = determineGender(item.baseName);
+                migratedCount++;
+                
+                if (item.modifiersDisplay && Array.isArray(item.modifiersDisplay)) {
+                    item.modifiersDisplay = item.modifiersDisplay.map(mod => 
+                        adaptModifierToGender(mod, item.gender)
+                    );
+                }
+                
+                if (item.modifiers && Array.isArray(item.modifiers)) {
+                    item.modifiers = item.modifiers.map(mod => 
+                        adaptModifierToGender(mod, item.gender)
+                    );
+                }
+            }
+        });
+    }
+    
+    // Миграция для предметов на рынке
+    if (gameState.marketItems && Array.isArray(gameState.marketItems)) {
+        gameState.marketItems.forEach(item => {
+            if (!item.gender) {
+                item.gender = determineGender(item.baseName);
+                migratedCount++;
+                
+                if (item.modifiersDisplay && Array.isArray(item.modifiersDisplay)) {
+                    item.modifiersDisplay = item.modifiersDisplay.map(mod => 
+                        adaptModifierToGender(mod, item.gender)
+                    );
+                }
+                
+                if (item.modifiers && Array.isArray(item.modifiers)) {
+                    item.modifiers = item.modifiers.map(mod => 
+                        adaptModifierToGender(mod, item.gender)
+                    );
+                }
+            }
+        });
+    }
+    
+    if (migratedCount > 0) {
+        console.log(`Мигрировано родов для ${migratedCount} предметов`);
+    }
+    
+    return migratedCount;
+}
+
+function toggleItemAsSample(itemId) {
+    const item = gameState.inventory.find(i => i.id === itemId);
+    if (!item) return;
+    
+    item.isSample = !item.isSample;
+    
+    // Показываем уведомление
+    if (item.isSample) {
+        const wordCount = getTrueName(item).split(' ').length;
+        showNotification(`🧠 Предмет помечен как образец! Даёт +${wordCount} слов опыта в категории "${getCategoryName(item.category)}"`, 'success');
+    } else {
+        showNotification('✅ Снята пометка образца', 'info');
+    }
+    
+    renderInventory();
+    saveGame();
+}
+
+
+
+        // ==============================================
+        // СИСТЕМА МОДИФИКАТОРОВ (DIABLO-STYLE) - РАСШИРЕННАЯ
+        // ==============================================
+        // MODIFIERS moved to constants.js;
+
+        const DETAILED_MODIFIERS = {
+            "в кожаном переплете": ["переплетенная кожей тюленя", "переплетенная сафьяном", "переплетенная телячьей кожей", "свернутая в кожаную торбу"],
+            "с позолотой": ["с позолотой сусальным золотом", "с золотой инкрустацией", "позолоченная гальваническим методом", "с золотым напылением"],
+            "расписная": ["расписанная вручную", "с ручной росписью кобальтом", "с подглазурной росписью", "расписанная мастером Иваном"],
+            "Фарфоровая": ["из бисквитного фарфора", "из костяного фарфора", "из твердого фарфора", "из мягкого фарфора"],
+            "Серебряная": ["из серебра 84 пробы", "из серебра 875 пробы", "из стерлингового серебра", "из серебра с чернением"],
+            "Масляная": ["написанная маслом на холсте", "масло на оргалите", "масло на деревянной доске", "многослойная масляная живопись"],
+            "со старинными гравюрами": ["с медными гравюрами", "с ксилографией", "с офортами", "с литографиями"],
+            "офицерская": ["офицерская образца 1913 года", "офицерская царской армии", "офицерская гвардейского полка", "офицерская генеральского чина"],
+            "с символикой": ["с имперским орлом", "с советской звездой", "с царским вензелем", "с полковым гербом"]
+        };
+
+        // ==============================================
+        // РАСШИРЕННАЯ СИСТЕМА ДЕФЕКТОВ С УРОВНЯМИ СЛОЖНОСТИ
+        // ==============================================
+        // defectsList moved to constants.js;
+
+        // Функция для получения дефекта с вариациями
+        function getRandomDefect(availableDefects = defectsList) {
+    const defectTemplate = availableDefects[Math.floor(Math.random() * availableDefects.length)];
+    
+    // Гарантируем, что actualSeverity всегда будет числом
+    const actualSeverity = defectTemplate.severity * (0.8 + Math.random() * 0.4);
+    
+    return {
+        ...defectTemplate,
+        name: defectTemplate.name,
+        actualSeverity: actualSeverity || 0.1, // fallback значение
+        baseSeverity: defectTemplate.severity // сохраняем базовую серьезность
+    };
+}
+
+        // Вспомогательная функция для поиска дефекта по имени
+        function getDefectByName(defectName) {
+    const defect = defectsList.find(d => 
+        defectName.toLowerCase().includes(d.name.toLowerCase()) ||
+        d.name.toLowerCase().includes(defectName.toLowerCase())
+    );
+    
+    if (defect) {
+        return {
+            ...defect,
+            actualSeverity: defect.severity || 0.1,
+            baseSeverity: defect.severity || 0.1
+        };
+    }
+    
+    // Возвращаем дефект по умолчанию если не найден
+    return {
+        name: defectName,
+        severity: 0.1,
+        actualSeverity: 0.1,
+        baseSeverity: 0.1,
+        difficulty: "medium",
+        baseRepairChance: 0.5
+    };
+}
+
+
+function restoreExpertiseCosts() {
+    // Восстанавливаем стоимости для всех предметов в инвентаре
+    gameState.inventory.forEach(item => {
+        if (item.expertiseMethodCosts) {
+            Object.keys(item.expertiseMethodCosts).forEach(method => {
+                const currentCost = item.expertiseMethodCosts[method];
+                const baseCost = BASE_EXPERTISE_COSTS[method];
+                
+                if (currentCost > baseCost) {
+                    // Снижаем на 5, но не ниже базовой стоимости
+                    const newCost = Math.max(baseCost, currentCost - 5);
+                    item.expertiseMethodCosts[method] = newCost;
+                }
+            });
+        }
+    });
+    
+    // Восстанавливаем стоимости для предметов на продаже
+    gameState.sellingItems.forEach(item => {
+        if (item.expertiseMethodCosts) {
+            Object.keys(item.expertiseMethodCosts).forEach(method => {
+                const currentCost = item.expertiseMethodCosts[method];
+                const baseCost = BASE_EXPERTISE_COSTS[method];
+                
+                if (currentCost > baseCost) {
+                    const newCost = Math.max(baseCost, currentCost - 5);
+                    item.expertiseMethodCosts[method] = newCost;
+                }
+            });
+        }
+    });
+}
+
+        // ==============================================
+        // ФУНКЦИИ ГЕНЕРАЦИИ ПРЕДМЕТОВ
+        // ==============================================
+        function generateModifiers(category, rarity, skillLevel) {
+    const modifiers = [];
+    
+    // Новое распределение по редкости
+    const rarityDistribution = {
+        common: { 
+            0: 0.70, // 70% без модификаторов
+            1: 0.20, // 20% один модификатор
+            2: 0.08, // 8% два модификатора  
+            3: 0.02  // 2% три модификатора
+        },
+        uncommon: {
+            0: 0.40,
+            1: 0.35,
+            2: 0.20,
+            3: 0.05
+        },
+        rare: {
+            0: 0.20,
+            1: 0.40,
+            2: 0.30,
+            3: 0.10
+        },
+        very_rare: {
+            0: 0.05,
+            1: 0.25,
+            2: 0.45,
+            3: 0.25
+        }
+    };
+
+    // Выбираем количество модификаторов по распределению
+    const distribution = rarityDistribution[rarity] || rarityDistribution.common;
+    const random = Math.random();
+    let targetCount = 0;
+    let cumulative = 0;
+
+    for (const [count, probability] of Object.entries(distribution)) {
+        cumulative += probability;
+        if (random <= cumulative) {
+            targetCount = parseInt(count);
+            break;
+        }
+    }
+
+    const pools = [
+        MODIFIERS.junk,
+        MODIFIERS.antique,
+        MODIFIERS[category] || []
+    ];
+
+    // Добавляем специализированные префиксы с шансом, зависящим от редкости
+    const specializedChance = { common: 0.1, uncommon: 0.2, rare: 0.3, very_rare: 0.4 }[rarity];
+    if (Math.random() < specializedChance && MODIFIERS.specialized[category]) {
+        const specialized = MODIFIERS.specialized[category];
+        modifiers.push(specialized[Math.floor(Math.random() * specialized.length)]);
+    }
+
+    // Добавляем узкоспециализированные суффиксы с шансом, зависящим от редкости
+    const expertChance = { common: 0.05, uncommon: 0.15, rare: 0.25, very_rare: 0.35 }[rarity];
+    if (Math.random() < expertChance && MODIFIERS.expert[category]) {
+        const expert = MODIFIERS.expert[category];
+        modifiers.push(expert[Math.floor(Math.random() * expert.length)]);
+    }
+
+    // Добавляем основные модификаторы до целевого количества
+    for (let i = 0; i < targetCount; i++) {
+        const pool = pools[Math.floor(Math.random() * pools.length)];
+        if (pool.length > 0) {
+            const mod = pool[Math.floor(Math.random() * pool.length)];
+            // Проверяем, нет ли уже такого модификатора
+            if (!modifiers.some(existing => 
+                existing.original === mod || existing === mod)) {
+                modifiers.push(mod);
+            }
+        }
+    }
+
+    return modifiers;
+}
+
+        function applyProfaneFilters(modifiers, skillLevel) {
+            if (skillLevel >= 2) return modifiers;
+            
+            return modifiers.map(mod => {
+                // 70% шанс заменить на профанный
+                if (Math.random() < 0.70) {
+                    // 5% шанс что профанный модификатор настоящий!
+                    if (Math.random() < 0.05) {
+                        const profane = MODIFIERS.profane[Math.floor(Math.random() * MODIFIERS.profane.length)];
+                        return { original: mod, display: profane, isProfaneReal: true };
+                    }
+                    const profane = MODIFIERS.profane[Math.floor(Math.random() * MODIFIERS.profane.length)];
+                    return { original: mod, display: profane, isProfaneReal: false };
+                }
+                return { original: mod, display: mod, isProfaneReal: false };
+            });
+        }
+
+        function applyDetailedModifiers(modifiers, skillLevel) {
+            if (skillLevel < 4) return modifiers;
+            
+            return modifiers.map(mod => {
+                const base = mod.original || mod;
+                if (DETAILED_MODIFIERS[base] && Math.random() < 0.33) {
+                    const detailed = DETAILED_MODIFIERS[base];
+                    const detailedMod = detailed[Math.floor(Math.random() * detailed.length)];
+                    return { ...mod, detailed: detailedMod };
+                }
+                return mod;
+            });
+        }
+
+        function getDisplayName(item, skillLevel) {
+    // Если предмет еще не имеет рода, определяем его
+    if (!item.gender) {
+        item.gender = determineGender(item.baseName);
+    }
+    
+    const modifiers = item.modifiersDisplay || item.modifiers || [];
+    const parts = modifiers.map(m => {
+        if (skillLevel >= 4 && m.detailed) {
+            // Если есть детализированная версия, тоже приводим к роду
+            const detailedMod = adaptModifierToGender(m.detailed, item.gender);
+            return typeof detailedMod === 'string' ? detailedMod : detailedMod.display || detailedMod;
+        }
+        
+        // Для обычных модификаторов они уже должны быть приведены к роду
+        const displayMod = m.display || m;
+        return typeof displayMod === 'string' ? displayMod : displayMod.display || displayMod;
+    });
+    
+    parts.push(item.baseName);
+    return parts.join(" ");
+}
+
+        function getTrueName(item) {
+            const modifiers = item.modifiers || [];
+            const parts = modifiers.map(m => {
+                if (m.detailed) return m.detailed;
+                return m.original || m;
+            });
+            parts.push(item.baseName);
+            return parts.join(" ");
+        }
+
+
+
+
+// ==============================================
+// 8. ОБНОВЛЯЕМ ФУНКЦИЮ renderShards (ИСПРАВЛЕННАЯ ВЕРСИЯ)
+// ==============================================
+
+
+
+function renderShards() {
+    const container = document.getElementById('shardsContainer');
+    const item = currentExpertise?.item;
+    const currentShards = item?.expertiseShards;
+    const goldenShards = item?.goldenShards;
+    
+    // Проверяем есть ли хоть что-то
+    const hasRegularShards = currentShards && currentShards.length > 0;
+    const hasGoldenShards = goldenShards && goldenShards.length > 0;
+    
+    if (!hasRegularShards && !hasGoldenShards) {
+        container.innerHTML = '<div class="text-center text-gray-400 py-4 text-sm">Используйте методы исследования для получения осколков</div>';
+        return;
+    }
+    
+    let html = '';
+    
+    // === СНАЧАЛА ЗОЛОТЫЕ ОСКОЛКИ ===
+    if (hasGoldenShards) {
+        const { multiplier } = calculateGoldenMultiplier(item);
+        
+        html += `
+            <div class="golden-shards-block mb-4 p-3 rounded-lg border-2 border-yellow-400" 
+                 style="background: linear-gradient(135deg, #fef9e7 0%, #fcf3cf 100%);">
+                <div class="flex items-center gap-2 mb-2">
+                    <span class="text-lg">🌟</span>
+                    <span class="font-bold text-yellow-700">Обоснования цены (×${multiplier})</span>
+                </div>
+                ${goldenShards.map(shard => renderGoldenShardItem(shard)).join('')}
+            </div>
+        `;
+    }
+    
+    // === ЗАТЕМ ОБЫЧНЫЕ ОСКОЛКИ ===
+    if (hasRegularShards) {
+        html += currentShards.map(shardItem => {
+            if (shardItem.method === 'internet') {
+                return renderInternetShard(shardItem);
+            }
+            else if (shardItem.method === 'visual' && shardItem.facts) {
+                return renderVisualShardWithFacts(shardItem);
+            }
+            else if (shardItem.method === 'uv' && shardItem.facts) {
+                return renderUVShard(shardItem);
+            }
+            else if (shardItem.method === 'testing' && shardItem.facts) {
+                return renderTestingShard(shardItem);
+            }
+            else {
+                return renderStandardShard(shardItem);
+            }
+        }).join('');
+    }
+    
+    container.innerHTML = html;
+}
+
+
+function toggleSampleFilter() {
+    gameState.showSamplesInInventory = !gameState.showSamplesInInventory;
+    renderInventory();
+    saveGame();
+}
+
+
+
+
+function renderTestingShard(shard) {
+    const backgroundColor = 'rgba(139, 0, 139, 0.1)'; // Тёмно-пурпурный
+    const borderColor = 'rgba(128, 0, 128, 0.4)'; // Фиолетовый
+    
+    // Для режима игрока просто выводим текст как есть
+    if (!gameState.isTesterMode) {
+        return `
+            <div class="border rounded-lg p-4 text-sm shadow-sm transition-all duration-300 hover:shadow-md" 
+                 style="background: ${backgroundColor}; border-color: ${borderColor}">
+                <div class="text-gray-700 whitespace-pre-line">${shard.text}</div>
+                <div class="mt-2 text-xs text-gray-500">
+                    ${shard.icon} ${shard.type}
+                    ${shard.testingData?.criticalFailure ? ' ⚠️ Повреждён анализом' : ''}
+                </div>
+            </div>
+        `;
+    }
+    
+    // РЕЖИМ ТЕСТЕРА - с детальной информацией
+    let factsHTML = '';
+    
+    if (shard.facts && shard.facts.length > 0) {
+        factsHTML = shard.facts.map(fact => {
+            const borderColor = fact.isTruthful ? '#10b981' : '#ef4444';
+            const bgColor = fact.isTruthful ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)';
+            
+            // Дополнительная информация для разных типов фактов
+            let extraInfo = '';
+            if (fact.type === 'age' && fact.estimatedAge) {
+                extraInfo = `<div class="text-xs text-gray-600 mt-1">Точность: ±${fact.agePrecision} лет</div>`;
+            } else if (fact.type === 'authenticity') {
+                extraInfo = `<div class="text-xs text-gray-600 mt-1">Реально: ${fact.actualAuthentic ? 'подлинник' : 'подделка'}</div>`;
+            } else if (fact.type === 'origin' && fact.descriptor) {
+                extraInfo = `<div class="text-xs text-gray-600 mt-1">${fact.descriptor}</div>`;
+            }
+            
+            return `
+                <div class="flex items-start gap-2 p-2 rounded border" 
+                     style="background: ${bgColor}; border-color: ${borderColor}">
+                    <div class="flex-shrink-0 text-sm mt-0.5">${fact.isTruthful ? '✅' : '❌'}</div>
+                    <div class="flex-1">
+                        <div class="text-gray-700">${fact.text}</div>
+                        <div class="flex items-center gap-2 mt-1">
+                            <div class="flex-1 h-1 bg-gray-200 rounded-full overflow-hidden">
+                                <div class="h-full rounded-full transition-all duration-500" 
+                                     style="width: ${fact.reliability}%; background: ${borderColor}"></div>
+                            </div>
+                            <div class="text-xs ${fact.isTruthful ? 'text-green-600' : 'text-red-600'}">
+                                ${fact.reliability}%
+                            </div>
+                        </div>
+                        ${extraInfo}
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+    
+    // Индикатор использования
+    const usesText = shard.testingData?.uses === 1 ? "1 использование" :
+        shard.testingData?.uses === 2 ? "2 использования" :
+        "3 использования";
+    
+    const criticalFailureIndicator = shard.testingData?.criticalFailure ? `
+        <div class="text-xs px-2 py-1 rounded bg-red-100 text-red-800">
+            ⚠️ Повреждён при анализе
+        </div>
+    ` : '';
+    
+    return `
+        <div class="border rounded-lg p-4 text-sm shadow-sm transition-all duration-300 hover:shadow-md" 
+             style="background: ${backgroundColor}; border-color: ${borderColor}">
+            <div class="flex items-center gap-3 mb-3">
+                <div class="text-2xl">${shard.icon}</div>
+                <div class="flex-1">
+                    <div class="flex justify-between items-center">
+                        <div class="font-semibold text-gray-800">${shard.type}</div>
+                        <div class="flex items-center gap-2">
+                            <div class="text-xs px-2 py-1 rounded bg-purple-100 text-purple-800">
+                                ${usesText}
+                            </div>
+                            ${criticalFailureIndicator}
+                            <div class="text-xs px-2 py-1 rounded bg-white border" style="border-color: ${borderColor}">
+                                ${shard.reliability}%
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Отдельные факты -->
+            <div class="space-y-2">
+                ${factsHTML}
+            </div>
+            
+            <div class="flex items-center gap-2 mt-3 pt-2 border-t border-gray-200">
+                <div class="text-xs text-gray-500">Метод: ${shard.method}</div>
+                <div class="text-xs text-purple-500">${shard.testingData?.factCount || 1} факт(а)</div>
+            </div>
+        </div>
+    `;
+}
+
+
+
+        function renderSkills() {
+    const container = document.getElementById('skillsDisplay');
+    const skillNames = {
+        porcelain: "🏺 Фарфор",
+        metal: "🔧 Металл", 
+        painting: "🎨 Живопись",
+        books: "📚 Книги",
+        militaria: "🎖️ Милитари"
+    };
+
+    // Считаем слова в инвентаре для каждого навыка
+    const wordCounts = { porcelain: 0, metal: 0, painting: 0, books: 0, militaria: 0 };
+    
+    gameState.inventory.forEach(item => {
+        const trueName = getTrueName(item);
+        const words = trueName.split(' ').length;
+        wordCounts[item.category] += words;
+    });
+
+    container.innerHTML = Object.keys(gameState.skills).map(skill => {
+        const level = gameState.skills[skill];
+        const inventoryWords = wordCounts[skill];
+        const expertiseWords = gameState.expertiseExperience ? gameState.expertiseExperience[skill] || 0 : 0;
+        const totalWords = inventoryWords + expertiseWords;
+        
+        let progress = 0;
+        let nextLevel = "";
+        let nextThreshold = 0;
+        
+        if (level === 0) {
+            progress = (totalWords / 8) * 100;
+            nextLevel = `Следующий уровень: ${totalWords}/8 слов`;
+            nextThreshold = 8;
+        } else if (level === 1) {
+            progress = ((totalWords - 8) / 12) * 100;
+            nextLevel = `Следующий уровень: ${totalWords - 8}/12 слов`;
+            nextThreshold = 12;
+        } else if (level === 2) {
+            progress = ((totalWords - 20) / 30) * 100;
+            nextLevel = `Следующий уровень: ${totalWords - 20}/30 слов`;
+            nextThreshold = 30;
+        } else {
+            progress = 100;
+            nextLevel = "Максимальный уровень достигнут";
+            nextThreshold = 0;
+        }
+        
+        // 🔥 ДОБАВЛЯЕМ ИНФОРМАЦИЮ ОБ ОПЫТЕ ЭКСПЕРТИЗЫ
+        let expertiseInfo = "";
+        if (expertiseWords > 0) {
+            expertiseInfo = `<div class="text-xs text-blue-600 mt-1">📚 Опыт от экспертиз: +${expertiseWords} слов</div>`;
+        }
+        
+        let bonuses = [];
+        if (level >= 1) bonuses.push("Видны дефекты");
+        if (level >= 2) bonuses.push("Видны клейма, доступна тактика 'Экспертиза'");
+        if (level >= 3) bonuses.push("Видна редкость, бесплатный справочник");
+
+        let progressColor = "bg-red-500";
+        if (progress > 33) progressColor = "bg-yellow-500";
+        if (progress > 66) progressColor = "bg-green-500";
+        if (level === 3) progressColor = "bg-purple-600";
+
+        return `
+            <div class="card p-4 border-2 border-gray-300">
+                <div class="flex justify-between items-start mb-3">
+                    <h3 class="font-bold text-sm" style="color: var(--text-main);">${skillNames[skill]}</h3>
+                    <div class="text-lg font-bold" style="color: var(--accent-gold);">Ур. ${level}</div>
+                </div>
+                
+                <div class="text-xs mb-2" style="color: var(--text-muted);">
+                    ${totalWords} слов всего
+                    ${inventoryWords > 0 ? `<br><span class="text-green-600">📦 ${inventoryWords} из инвентаря</span>` : ''}
+                    ${expertiseWords > 0 ? `<br><span class="text-blue-600">🔍 ${expertiseWords} от экспертиз</span>` : ''}
+                </div>
+                
+                <div class="w-full bg-gray-700 rounded-full h-3 mb-2">
+                    <div class="${progressColor} h-3 rounded-full transition-all duration-500" 
+                         style="width: ${Math.min(100, progress)}%"></div>
+                </div>
+                
+                <div class="text-xs mb-3" style="color: var(--text-muted);">${nextLevel}</div>
+                
+                <div class="space-y-1">
+                    ${bonuses.map(b => `
+                        <div class="text-xs flex items-center" style="color: var(--text-muted);">
+                            <span class="text-green-500 mr-1">✓</span> ${b}
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+        function renderStats() {
+    // ... остальной код остается прежним ...
+
+    const dealsContainer = document.getElementById('dealsLog');
+    const emptyDeals = document.getElementById('emptyDeals');
+
+    if (gameState.dealsLog.length === 0) {
+        dealsContainer.innerHTML = '';
+        emptyDeals.classList.remove('hidden');
+        return;
+    }
+
+    emptyDeals.classList.add('hidden');
+    dealsContainer.innerHTML = gameState.dealsLog.slice().reverse().map((deal, idx) => {
+        const profit = deal.salePrice - deal.purchasePrice - deal.expertiseCost;
+        const profitColor = profit > 0 ? 'text-green-600' : 'text-red-600';
+        const rowId = `deal-row-${idx}`;
+        const dealIcon = DETAILED_ICONS[deal.baseName] || CATEGORY_ICONS[deal.category];
+
+        return `
+            <tr class="border-b deal-row" onclick="toggleDealDetails('${rowId}')">
+                <td class="p-2 text-center text-2xl">${dealIcon}</td>
+                <td class="p-2">${deal.displayName}</td>
+                <td class="p-2 text-right">${formatMoney(deal.purchasePrice)}</td>
+                <td class="p-2 text-right">${formatMoney(deal.salePrice)}</td>
+                <td class="p-2 text-left">${deal.channel}</td>
+                <td class="p-2 text-right font-bold ${profitColor}">${formatMoney(profit)}</td>
+            </tr>
+            <tr id="${rowId}" class="hidden deal-details">
+                <td colspan="6" class="p-4">
+                    <div class="grid grid-cols-2 gap-4 text-sm">
+                        <div><strong>Первое название:</strong> ${deal.displayName}</div>
+                        <div><strong>Истинное название:</strong> ${deal.trueName}</div>
+                        <div><strong>Реальная ценность:</strong> ${formatMoney(deal.realValue)}</div>
+                        <div><strong>Экспертиза:</strong> ${formatMoney(deal.expertiseCost)}</div>
+                        <div><strong>Оценка игрока:</strong> ${formatMoney(deal.estimatedValue)}</div>
+                        <div><strong>Цена продажи:</strong> ${formatMoney(deal.salePrice)}</div>
+                        <div><strong>Подлинность:</strong> ${deal.authentic ? '✅ Подлинник' : '❌ Подделка'}</div>
+                        <div><strong>Продано как:</strong> ${deal.soldAsAuthentic ? 'Подлинник' : 'Подделка'}</div>
+                        <div class="col-span-2"><strong>Дефекты:</strong> ${deal.defects.join(', ') || 'Нет'}</div>
+                    </div>
+                </td>
+            </tr>
+        `;
+    }).join('');
+}
+
+        function calculateDefectRestorationProgress(method, defect, skill, category, isSpecialty) {
+            const difficultyMultipliers = {
+                "easy": 1.5,
+                "medium": 1.0,
+                "hard": 0.6,
+                "critical": 0.3
+            };
+            
+            const skillMultipliers = {
+                1: 0.3,
+                2: 0.6,
+                3: 1.0,
+                4: 1.4,
+                5: 2.0
+            };
+            
+            const specialtyBonus = isSpecialty ? 1.3 : 1.0;
+            const difficultyMultiplier = difficultyMultipliers[defect.difficulty] || 1.0;
+            const skillMultiplier = skillMultipliers[Math.floor(skill)] || 0.5;
+            
+            // Базовая эффективность метода с учетом сложности дефекта
+            const baseEffectiveness = method.effectiveness.min + 
+                Math.random() * (method.effectiveness.max - method.effectiveness.min);
+            
+            // Итоговая эффективность с учетом всех модификаторов
+            let effectiveness = baseEffectiveness * difficultyMultiplier * skillMultiplier * specialtyBonus;
+            
+            // Для критических дефектов добавляем дополнительную сложность
+            if (defect.difficulty === "critical") {
+                effectiveness *= (0.5 + Math.random() * 0.3);
+            }
+            
+            // Ограничиваем максимальный прогресс за одну попытку
+            const maxProgressPerAttempt = {
+                "easy": 80,
+                "medium": 60,
+                "hard": 40,
+                "critical": 20
+            };
+            
+            return Math.min(effectiveness, maxProgressPerAttempt[defect.difficulty]);
+        }
+
+        function calculateRestorationSuccessChance(method, defect, skill, category) {
+            const difficultyRiskMultipliers = {
+                "easy": 0.7,
+                "medium": 1.0,
+                "hard": 1.4,
+                "critical": 2.0
+            };
+            
+            const skillRiskReduction = skill * 0.08;
+            const baseRisk = method.risk;
+            const difficultyMultiplier = difficultyRiskMultipliers[defect.difficulty] || 1.0;
+            
+            let actualRisk = baseRisk * difficultyMultiplier - skillRiskReduction;
+            
+            return Math.max(0.05, Math.min(0.95, 1 - actualRisk));
+        }
+
+        function attemptAdvancedRestoration(itemId, methodId) {
+    const item = gameState.inventory.find(i => i.id === itemId);
+    if (!item) return;
+
+    // Гарантируем инициализацию прогресса
+    initializeRestorationProgress(item);
+
+    const method = findAllRestorationMethods().find(m => m.id === methodId);
+    const skill = gameState.skills[item.category] || 0;
+
+    // Расчет стоимости с учетом повторных попыток
+    const attemptCount = item.restorationAttempts || 0;
+    const costMultiplier = Math.pow(method.costReduction || 0.7, attemptCount);
+    const actualCost = Math.round((method.cost || 100) * costMultiplier);
+
+    if (skill < (method.skillReq || 1)) {
+        showNotification(`❌ Недостаточный уровень навыка! Требуется: ${method.skillReq || 1}`, 'error');
+        return;
+    }
+
+    if (gameState.money < actualCost) {
+        showNotification('Недостаточно денег для реставрации!', 'error');
+        return;
+    }
+
+    gameState.money -= actualCost;
+    item.restorationAttempts = attemptCount + 1;
+
+    // Находим дефекты, которые можно исправить этим методом
+    const applicableDefects = (item.defects || []).filter(defect =>
+        (method.fixes || []).some(fix => defect.toLowerCase().includes(fix.toLowerCase()))
+    );
+
+    if (applicableDefects.length === 0) {
+        showNotification('Этот метод не подходит для дефектов предмета', 'warning');
+        gameState.money += actualCost;
+        return;
+    }
+
+    // Обрабатываем каждый подходящий дефект
+    let totalProgress = 0;
+    let successCount = 0;
+    let failureCount = 0;
+
+    applicableDefects.forEach(defectName => {
+        const defectInfo = item.restorationProgress[defectName];
+        if (!defectInfo) return;
+
+        const successChance = calculateRestorationSuccessChance(method, defectInfo, skill, item.category);
+        const success = Math.random() < successChance;
+
+        if (success) {
+            const progress = calculateDefectRestorationProgress(method, defectInfo, skill, item.category, false);
+            const oldProgress = defectInfo.progress || 0;
+            defectInfo.progress = Math.min(100, (defectInfo.progress || 0) + progress);
+            totalProgress += (defectInfo.progress - oldProgress);
+            successCount++;
+            
+            showNotification(`✅ Успех с дефектом "${defectName}": +${Math.round(progress)}% прогресса`, 'success');
+        } else {
+            handleRestorationFailureForDefect(method, item, defectName, defectInfo);
+            failureCount++;
+        }
+    });
+
+    // Обновляем оцененную стоимость предмета
+    updateEstimatedValueAfterRestoration(item);
+    
+    // Итоговое уведомление
+    if (successCount > 0) {
+        showNotification(`🎯 Реставрация: ${successCount} успехов, ${failureCount} неудач. Общий прогресс: +${Math.round(totalProgress)}%`, 'success');
+    } else {
+        showNotification(`❌ Реставрация не удалась по всем дефектам`, 'error');
+    }
+
+    renderRestorationModal();
+    renderInventory();
+    saveGame();
+}
+
+        function handleRestorationFailureForDefect(method, item, defectName, defectInfo) {
+    const failureSeverity = Math.random();
+    const difficultyRisk = {
+        "easy": 0.1,
+        "medium": 0.2,
+        "hard": 0.4,
+        "critical": 0.6
+    };
+    
+    const riskMultiplier = difficultyRisk[defectInfo.difficulty] || 0.2;
+    
+    if (failureSeverity < riskMultiplier * 0.3) {
+        // Легкая неудача - небольшой регресс
+        defectInfo.progress = Math.max(0, (defectInfo.progress || 0) - 5);
+        showNotification(`⚠️ Неудача с "${defectName}": небольшой регресс -5%`, 'warning');
+    } else if (failureSeverity < riskMultiplier * 0.7) {
+        // Средняя неудача - значительный регресс
+        defectInfo.progress = Math.max(0, (defectInfo.progress || 0) - 15);
+        showNotification(`❌ Неудача с "${defectName}": значительный регресс -15%`, 'error');
+    } else {
+        // Критическая неудача - новый дефект
+        const newDefects = [
+            "дополнительные повреждения от неудачной реставрации",
+            "следы непрофессионального вмешательства",
+            "усугубление исходного дефекта"
+        ];
+        const newDefect = newDefects[Math.floor(Math.random() * newDefects.length)];
+        if (!item.defects.includes(newDefect)) {
+            item.defects.push(newDefect);
+            // Инициализируем прогресс для нового дефекта
+            const defectTemplate = getDefectByName(newDefect) || {
+                baseSeverity: 0.1,
+                difficulty: "medium",
+                baseRepairChance: 0.5
+            };
+            item.restorationProgress[newDefect] = {
+                progress: 0,
+                baseSeverity: defectTemplate.baseSeverity,
+                difficulty: defectTemplate.difficulty,
+                baseRepairChance: defectTemplate.baseRepairChance
+            };
+            
+            // НЕМЕДЛЕННО применяем штраф от нового дефекта к стоимости
+            const oldValue = item.estimatedValue || item.realValue;
+            const penalty = oldValue * defectTemplate.baseSeverity;
+            item.estimatedValue = Math.round(oldValue - penalty);
+            
+            showNotification(`💥 Критическая неудача! Новый дефект: "${newDefect}" (-${Math.round(defectTemplate.baseSeverity * 100)}% стоимости)`, 'error');
+        }
+    }
+    
+    // Обновляем стоимость после изменений
+    updateEstimatedValueAfterRestoration(item);
+}
+
+        function updateEstimatedValueAfterRestoration(item) {
+    if (!item.restorationProgress) return;
+
+    let totalRestorationBonus = 0;
+
+    // Рассчитываем бонус от реставрации для каждого дефекта
+    Object.values(item.restorationProgress).forEach(progressInfo => {
+        const progress = progressInfo.progress || 0;
+        const baseSeverity = progressInfo.baseSeverity || 0;
+        
+        // Каждый дефект дает бонус пропорционально прогрессу и его исходному штрафу
+        const defectBonus = baseSeverity * (progress / 100);
+        totalRestorationBonus += defectBonus;
+    });
+
+    // Бонус не может превышать суммарный штраф от всех дефектов
+    const maxPossibleBonus = Object.values(item.restorationProgress).reduce(
+        (sum, progressInfo) => sum + (progressInfo.baseSeverity || 0), 0
+    );
+    totalRestorationBonus = Math.min(totalRestorationBonus, maxPossibleBonus);
+
+    // Базой для расчета используем реальную стоимость без дефектов
+    const baseValue = item.realValue / (1 - maxPossibleBonus);
+    
+    // Новая стоимость = базовая стоимость × (1 - оставшиеся дефекты + бонусы от реставрации)
+    const remainingDefects = maxPossibleBonus - totalRestorationBonus;
+    const newValue = Math.round(baseValue * (1 - remainingDefects));
+
+    const oldValue = item.estimatedValue || item.realValue;
+    item.estimatedValue = newValue;
+
+    const valueChange = newValue - oldValue;
+    if (valueChange > 0) {
+        showNotification(`📈 Оценка увеличена на ${formatMoney(valueChange)}!`, 'success');
+    } else if (valueChange < 0) {
+        showNotification(`📉 Оценка уменьшена на ${formatMoney(-valueChange)}!`, 'error');
+    }
+}
+
+        function performDetailedDamageAnalysis(item) {
+    const analysis = {
+        totalSeverity: 0,
+        damageByType: {},
+        recommendedMethods: [],
+        professionalCost: 0,
+        restorationPotential: 0,
+        riskAssessment: 'low'
+    };
+
+    if (item.defects && item.defects.length > 0) {
+        item.defects.forEach(defect => {
+            const damageInfo = classifyDamage(defect, item.category);
+            analysis.totalSeverity += damageInfo.severityValue || 0;
+            
+            if (!analysis.damageByType[damageInfo.type]) {
+                analysis.damageByType[damageInfo.type] = [];
+            }
+            analysis.damageByType[damageInfo.type].push(damageInfo);
+        });
+    }
+
+    analysis.restorationPotential = Math.max(0.1, 1 - (analysis.totalSeverity || 0));
+    analysis.professionalCost = calculateProfessionalCost(item, analysis);
+    analysis.riskAssessment = (analysis.totalSeverity || 0) > 0.7 ? 'high' : (analysis.totalSeverity || 0) > 0.4 ? 'medium' : 'low';
+    
+    return analysis;
+}
+
+        function classifyDamage(defect, category) {
+            // Упрощенная классификация для примера
+            const defectInfo = getDefectByName(defect);
+            if (defectInfo) {
+                return {
+                    type: defectInfo.difficulty,
+                    originalDefect: defect,
+                    severity: defectInfo.difficulty,
+                    severityValue: defectInfo.actualSeverity,
+                    baseRepairCost: 500,
+                    specialty: 'general'
+                };
+            }
+            
+            return {
+                type: 'unknown',
+                originalDefect: defect,
+                severity: 'medium',
+                severityValue: 0.3,
+                baseRepairCost: 500,
+                specialty: 'general'
+            };
+        }
+
+        function calculateProfessionalCost(item, analysis) {
+    let baseCost = (item.estimatedValue || item.realValue || 1000) * 0.1;
+    const difficultyMultiplier = 1 + ((analysis.totalSeverity || 0) * 2);
+    baseCost *= difficultyMultiplier;
+    
+    const categoryMultipliers = {
+        porcelain: 1.2, metal: 1.1, painting: 1.8, books: 1.3, militaria: 1.4
+    };
+    
+    baseCost *= categoryMultipliers[item.category] || 1.0;
+    return Math.max(1000, Math.min(100000, Math.round(baseCost)));
+}
+
+        function findAllRestorationMethods() {
+            return [...restorationMethods.basic, ...restorationMethods.advanced, ...restorationMethods.expert];
+        }
+
+        function getItemSpecialty(item) {
+            const specialtyMap = {
+                porcelain: 'ceramics',
+                metal: 'metalwork', 
+                painting: 'art',
+                books: 'paper',
+                militaria: 'weapons'
+            };
+            return specialtyMap[item.category] || 'general';
+        }
+
+        function calculateStudioCost(studio, item, analysis) {
+            let cost = studio.costMultiplier * analysis.professionalCost;
+            const rarityMultipliers = { common: 1.0, uncommon: 1.3, rare: 1.8, very_rare: 2.5 };
+            cost *= rarityMultipliers[item.rarity] || 1.0;
+            if (!item.authentic) cost *= 0.3;
+            return Math.max(studio.minCost, Math.min(studio.maxCost, Math.round(cost)));
+        }
+
+        function startProfessionalRestoration(itemId, studioLevel) {
+            const item = gameState.inventory.find(i => i.id === itemId);
+            if (!item) return;
+
+            const studio = professionalStudios[studioLevel];
+            const analysis = performDetailedDamageAnalysis(item);
+            const cost = calculateStudioCost(studio, item, analysis);
+
+            if (gameState.money < cost) {
+                showNotification('Недостаточно денег для профессиональной реставрации!', 'error');
+                return;
+            }
+
+            gameState.money -= cost;
+            
+            // Профессиональная реставрация всегда успешна
+            item.defects = [];
+            item.restorationProgress = {};
+            
+            // Значительно увеличиваем оцененную стоимость
+            const valueIncrease = 1 + (1 - analysis.restorationPotential) * 0.8;
+            const oldEstimatedValue = item.estimatedValue || item.realValue;
+            item.estimatedValue = Math.round(oldEstimatedValue * valueIncrease);
+            item.restored = true;
+            
+            if (!item.modifiers) item.modifiers = [];
+            item.modifiers.push(`профессионально отреставрирован (${studio.name})`);
+            
+            showNotification(`✅ Профессиональная реставрация завершена! Оценка увеличена на ${Math.round((valueIncrease - 1) * 100)}%`, 'success');
+            
+            closeRestoration();
+            renderInventory();
+            saveGame();
+        }
+
+
+        function showSellerQuote(quote) {
+            document.getElementById('sellerQuote').textContent = quote;
+        }
+
+        // ==============================================
+        // СИСТЕМА ЭКСПЕРТИЗЫ
+        // ==============================================
+function startExpertise(itemId) {
+    const item = gameState.inventory.find(i => i.id === itemId);
+    if (!item) return;
+    
+    // Инициализируем массив осколков
+    if (!item.expertiseShards) item.expertiseShards = [];
+    
+    currentExpertise = {
+        item: item,
+        clues: []
+    };
+    
+    document.getElementById('expertiseModal').classList.remove('hidden');
+    
+    updateExpertiseAttentionDisplay();
+    renderExpertiseModal();
+    
+    // 🔥 ИСПРАВЛЕНИЕ: Ждем дольше для гарантированного создания зон
+    console.log("🚀 Запуск экспертизы, ожидание создания зон...");
+    
+    // Сначала убедимся, что zones.js загружен
+    if (typeof renderExpertiseZones === 'function') {
+        renderExpertiseZones();
+    }
+    
+    // Ждем 300ms, затем инициализируем PNG
+    setTimeout(() => {
+        console.log("🛠️ Инициализация PNG...");
+        initMethodVisualsContainer();
+        updateMethodVisuals();
+    }, 300);
+    
+//    window.addEventListener('resize', handleExpertiseResize);
+}
+
+
+function updateExpertiseAttentionDisplay() {
+    const attentionValue = document.getElementById('attentionValue');
+    const attentionEye = document.getElementById('attentionEye');
+    
+    if (attentionValue) {
+        attentionValue.textContent = gameState.attention;
+        
+        // Меняем цвет текста в зависимости от уровня внимания
+        if (gameState.attention <= 10) {
+            attentionValue.classList.remove('bg-gray-200', 'bg-yellow-200');
+            attentionValue.classList.add('bg-red-200', 'text-red-800');
+        } else if (gameState.attention <= 30) {
+            attentionValue.classList.remove('bg-gray-200', 'bg-red-200');
+            attentionValue.classList.add('bg-yellow-200', 'text-yellow-800');
+        } else {
+            attentionValue.classList.remove('bg-yellow-200', 'bg-red-200');
+            attentionValue.classList.add('bg-gray-200', 'text-gray-800');
+        }
+    }
+    
+    if (attentionEye) {
+        // Меняем иконку глаза в зависимости от уровня внимания
+        if (gameState.attention <= 10) {
+            attentionEye.textContent = '😴'; // Спящий глаз
+            attentionEye.classList.add('attention-eye-critical');
+            attentionEye.classList.remove('attention-eye-low');
+        } else if (gameState.attention <= 30) {
+            attentionEye.textContent = '🫣'; // Прищуренный глаз
+            attentionEye.classList.add('attention-eye-low');
+            attentionEye.classList.remove('attention-eye-critical');
+        } else {
+            attentionEye.textContent = '👁️'; // Открытый глаз
+            attentionEye.classList.remove('attention-eye-low', 'attention-eye-critical');
+        }
+    }
+}
+
+        function checkContradictions() {
+            const clues = currentExpertise.clues;
+            const contradictions = [];
+
+            const hasOldMarks = clues.some(c => c.includes('клейма') && c.includes('ИФЗ'));
+            const hasModernMaterials = clues.some(c => c.includes('современные материалы'));
+
+            if (hasOldMarks && hasModernMaterials) {
+                contradictions.push('⚠️ ПРОТИВОРЕЧИЕ: Старинное клеймо + современные материалы = подделка!');
+            }
+
+            if (contradictions.length > 0) {
+                document.getElementById('contradictions').innerHTML = `
+                    <div class="mt-4 p-3 bg-red-100 border-2 border-red-500 rounded">
+                        ${contradictions.map(c => `<div class="text-sm font-bold text-red-700">${c}</div>`).join('')}
+                    </div>
+                `;
+            } else {
+                document.getElementById('contradictions').innerHTML = '';
+            }
+        }
+
+function initializeRestorationProgress(item) {
+    if (!item.restorationProgress) {
+        item.restorationProgress = {};
+    }
+    
+    item.defects.forEach(defectName => {
+        const defect = getDefectByName(defectName);
+        if (!item.restorationProgress[defectName]) {
+            item.restorationProgress[defectName] = {
+                progress: 0,
+                baseSeverity: defect.baseSeverity || defect.severity || 0.1,
+                difficulty: defect.difficulty || "medium",
+                baseRepairChance: defect.baseRepairChance || 0.5
+            };
+        } else {
+            // Гарантируем, что существующие значения тоже корректны
+            const progressInfo = item.restorationProgress[defectName];
+            progressInfo.baseSeverity = progressInfo.baseSeverity || defect.baseSeverity || defect.severity || 0.1;
+            progressInfo.difficulty = progressInfo.difficulty || defect.difficulty || "medium";
+            progressInfo.baseRepairChance = progressInfo.baseRepairChance || defect.baseRepairChance || 0.5;
+        }
+    });
+}
+
+
+
+        function checkFakeItemsPenalty() {
+            let penalty = 0;
+
+            gameState.inventory.forEach(item => {
+                if (!item.authentic && item.expertiseDone) {
+                    const wordCount = getTrueName(item).split(' ').length;
+                    penalty += wordCount;
+                }
+            });
+
+            gameState.sellingItems.forEach(sale => {
+                if (!sale.authentic && sale.channel !== 'auction') {
+                    const wordCount = getTrueName(sale).split(' ').length;
+                    penalty += wordCount;
+                }
+            });
+
+            if (penalty > 0 && gameState.lastFakePenalty !== penalty) {
+                gameState.reputation -= penalty;
+                showNotification(`⚠️ Подделки портят репутацию! -${penalty} репутации`, 'warning');
+                gameState.lastFakePenalty = penalty;
+            }
+        }
+
+        // ==============================================
+        // СИСТЕМА РЕСТАВРАЦИИ - НОВЫЕ ФУНКЦИИ
+        // ==============================================
+        function startRestoration(itemId) {
+            const item = gameState.inventory.find(i => i.id === itemId);
+            if (!item) return;
+
+            currentRestorationItem = item;
+            document.getElementById('restorationModal').classList.remove('hidden');
+            renderRestorationModal();
+        }
+
+        // ==============================================
+        // ИГРОВОЙ ЦИКЛ
+        // ==============================================
+
+
+        function showGoldenHour() {
+            const container = document.getElementById('goldenHourNotification');
+            container.innerHTML = `
+                <div class="bg-yellow-100 border-2 border-yellow-500 rounded-lg p-4 animate-slideIn">
+                    <div class="flex items-center gap-3">
+                        <div class="text-4xl">⭐</div>
+                        <div>
+                            <div class="font-bold text-lg">Золотой час!</div>
+                            <div class="text-sm text-gray-700">Первая сделка дня пройдет без конкурентов. Выбирайте с умом!</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            setTimeout(() => {
+                container.innerHTML = '';
+            }, 8000);
+        }
+
+        
+function fixNegativeValues() {
+    console.log("Проверка и исправление отрицательных стоимостей...");
+    
+    let fixedCount = 0;
+
+    // Исправляем предметы на рынке
+    if (gameState.marketItems && Array.isArray(gameState.marketItems)) {
+        gameState.marketItems.forEach(item => {
+            if (item.realValue <= 0 || isNaN(item.realValue)) {
+                const oldValue = item.realValue;
+                
+                // Восстанавливаем стоимость на основе базовой цены и дефектов
+                let newValue = item.basePrice || 1000;
+                
+                // Учитываем подделку
+                if (!item.authentic) {
+                    newValue = Math.round(newValue * (0.06 + Math.random() * 0.04));
+                }
+                
+                // Учитываем дефекты (максимум 80% штраф)
+                if (item.defects && item.defects.length > 0) {
+                    const defectSeverity = Math.min(0.8, item.defects.length * 0.2);
+                    newValue = Math.round(newValue * (1 - defectSeverity));
+                }
+                
+                // Гарантируем минимум
+                item.realValue = Math.max(50, newValue);
+                
+                console.warn(`Исправлена стоимость предмета на рынке "${item.baseName}": было ${oldValue}, стало ${item.realValue}`);
+                fixedCount++;
+            }
+            
+            // Также проверяем askingPrice
+            if (item.askingPrice <= 0 || isNaN(item.askingPrice)) {
+                item.askingPrice = Math.max(100, item.realValue);
+                console.warn(`Исправлена цена продавца для "${item.baseName}": ${item.askingPrice}`);
+                fixedCount++;
+            }
+        });
+    }
+
+    // Исправляем предметы в инвентаре
+    if (gameState.inventory && Array.isArray(gameState.inventory)) {
+        gameState.inventory.forEach(item => {
+            if (item.realValue <= 0 || isNaN(item.realValue)) {
+                const oldValue = item.realValue;
+                
+                // Восстанавливаем разумную стоимость
+                let newValue = item.basePrice || item.purchasePrice || 1000;
+                
+                if (!item.authentic) {
+                    newValue = Math.round(newValue * (0.06 + Math.random() * 0.04));
+                }
+                
+                if (item.defects && item.defects.length > 0) {
+                    const defectSeverity = Math.min(0.8, item.defects.length * 0.2);
+                    newValue = Math.round(newValue * (1 - defectSeverity));
+                }
+                
+                item.realValue = Math.max(50, newValue);
+                
+                console.warn(`Исправлена стоимость предмета в инвентаре "${item.baseName}": было ${oldValue}, стало ${item.realValue}`);
+                fixedCount++;
+            }
+            
+            // Исправляем purchasePrice если нужно
+            if (item.purchasePrice <= 0 || isNaN(item.purchasePrice)) {
+                item.purchasePrice = Math.max(100, item.realValue);
+                console.warn(`Исправлена цена покупки для "${item.baseName}": ${item.purchasePrice}`);
+                fixedCount++;
+            }
+        });
+    }
+
+    // Исправляем предметы на продаже
+    if (gameState.sellingItems && Array.isArray(gameState.sellingItems)) {
+        gameState.sellingItems.forEach(item => {
+            if (item.realValue <= 0 || isNaN(item.realValue)) {
+                const oldValue = item.realValue;
+                
+                let newValue = item.basePrice || item.purchasePrice || 1000;
+                
+                if (!item.authentic) {
+                    newValue = Math.round(newValue * (0.06 + Math.random() * 0.04));
+                }
+                
+                if (item.defects && item.defects.length > 0) {
+                    const defectSeverity = Math.min(0.8, item.defects.length * 0.2);
+                    newValue = Math.round(newValue * (1 - defectSeverity));
+                }
+                
+                item.realValue = Math.max(50, newValue);
+                
+                console.warn(`Исправлена стоимость предмета на продаже "${item.baseName}": было ${oldValue}, стало ${item.realValue}`);
+                fixedCount++;
+            }
+        });
+    }
+
+    if (fixedCount > 0) {
+        console.log(`Исправлено ${fixedCount} проблем со стоимостью предметов`);
+        showNotification(`🛠️ Исправлено ${fixedCount} проблем со стоимостью предметов`, 'info');
+    } else {
+        console.log("Проблем со стоимостью не обнаружено");
+    }
+}
+
+
+        
+        // ==============================================
+        // UI И ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
+        // ==============================================
+       // Обновляем функцию switchTab для обработки новой вкладки
+
+        // ==============================================
+// ОБНОВЛЕННАЯ ФУНКЦИЯ ОТОБРАЖЕНИЯ
+// ==============================================
+
+        function checkVictory() {
+            if (gameState.money >= 100000 && gameState.reputation >= 50) {
+                setTimeout(() => {
+                    alert(`🎉 ПОБЕДА! 🎉\n\nВы достигли цели за ${gameState.day} дней!\nКуплено: ${gameState.stats.bought}\nПродано: ${gameState.stats.sold}\nПрибыль: ${formatMoney(gameState.stats.profit)}`);
+                }, 500);
+            }
+        }
+
+        function checkGameOver() {
+            if (gameState.money < 0) {
+                setTimeout(() => {
+                    alert(`💸 БАНКРОТСТВО! 💸\n\nВы проиграли на ${gameState.day} день.\nКуплено: ${gameState.stats.bought}\nПродано: ${gameState.stats.sold}`);
+                    resetGame();
+                }, 500);
+            }
+        }
+
+        // ==============================================
+        // СОХРАНЕНИЕ/ЗАГРУЗКА ИГРЫ
+        // ==============================================
+      window.saveGame = function() {
+    if (typeof gameState === 'undefined') return;
+    localStorage.setItem('udelka_save', JSON.stringify(gameState));
+    console.log("💾 Saved (udelka_save). Level:", gameState.officeLevel);
+};
+
+       // ==============================================
+// ОБНОВЛЕННАЯ ЗАГРУЗКА ИГРЫ
+// ==============================================
+
+
+
+        function resetGame() {
+    if (confirm('Вы уверены? Весь прогресс будет удален!')) {
+        localStorage.removeItem('udelka_save');
+        location.reload();
+    }
+}
+
+        // Запуск при загрузке
+        window.onload = function() {
+            if (!loadGame()) {
+                // Если нет сохраненной игры, инициализируем новую
+                initGame();
+            }
+        };
+    
+
+
+
+
+// competitorGroups moved to constants.js;
+
+
+
+
+
+
+
+
+
+
+
+function generateAge() {
+    const roll = Math.random();
+    
+    if (roll < 0.5) {
+        // 50% - возраст 35-45 лет (1981-1991)
+        return 35 + Math.floor(Math.random() * 11);
+    }
+    else if (roll < 0.75) {
+        // 25% - молодые предметы (0-34 года)
+        return Math.floor(34 * Math.pow(Math.random(), 1.5));
+    }
+    else if (roll < 0.99999) {
+        // 24.999% - старые предметы (46-325 лет)
+        const baseAge = 46;
+        const maxOffset = 280;
+        const ageOffset = Math.floor(-Math.log(1 - Math.random() * 0.999) * 50);
+        return baseAge + Math.min(ageOffset, maxOffset);
+    }
+    else {
+        // 0.001% - предмет 1700 года
+        return 326;
+    }
+}
+
+
+function getHistoricalEra(age) {
+    const year = 2026 - age;
+    if (year >= 1991) return "Современный";
+    if (year >= 1917) return "Советский";
+    if (year >= 1900) return "Дореволюционный";
+    return "Императорский";
+}
+
+
+function getPossibleStyles(item) {
+    const year = 2026 - item.age;
+    return HISTORICAL_STYLES.filter(style => 
+        year >= style.years[0] && 
+        year <= style.years[1] &&
+        style.categories.includes(item.category)
+    );
+}
+
+
+function assignDominantStyle(item) {
+    // Для подделок временно увеличиваем возраст на 100 лет (но не более 326)
+    let styleAge = item.age;
+    if (!item.authentic) {
+        styleAge = Math.min(326, item.age + 100);
+    }
+    
+    const year = 2026 - styleAge;
+    
+    // 1. Ищем точное соответствие по году и категории
+    const exactMatches = HISTORICAL_STYLES.filter(style => 
+        year >= style.years[0] && 
+        year <= style.years[1] &&
+        style.categories.includes(item.category)
+    );
+    
+    if (exactMatches.length > 0) {
+        // ВАЖНО: Детерминированный выбор на основе возраста и категории
+        const hash = item.age + item.category.charCodeAt(0) + (item.authentic ? 1000 : 2000);
+        const selectedIndex = hash % exactMatches.length;
+        return exactMatches[selectedIndex];
+    }
+    
+    // 2. Если точных совпадений нет, ищем стили той же категории
+    const categoryStyles = HISTORICAL_STYLES.filter(style => 
+        style.categories.includes(item.category)
+    );
+    
+    if (categoryStyles.length > 0) {
+        // Детерминированный выбор ближайшего стиля
+        const hash = item.age + item.category.charCodeAt(0);
+        const selectedIndex = hash % categoryStyles.length;
+        return categoryStyles[selectedIndex];
+    }
+    
+    // 3. Стиль по умолчанию (должен быть всегда)
+    return {
+        name: "неопределенный стиль",
+        eras: ["Неизвестно"],
+        years: [1700, 2026],
+        categories: ["porcelain", "metal", "painting", "books", "militaria"],
+        descriptors: ["стиль не определен", "требует дополнительного исследования"],
+        icons: {"porcelain": "❓", "metal": "❓", "painting": "❓", "books": "❓", "militaria": "❓"}
+    };
+}
+
+
+
+
+
+
+
+
+
+
+
+function renderCompactExpertiseAttention() {
+    return `
+        <div class="flex items-center gap-2 attention-counter ${gameState.attention <= 20 ? 'attention-low' : gameState.attention <= 50 ? 'attention-medium' : ''}">
+            <div class="text-sm font-semibold">⚡</div>
+            <div class="text-sm font-bold">${gameState.attention}</div>
+            <div class="w-16 h-1 bg-white bg-opacity-30 rounded-full overflow-hidden">
+                <div class="h-full bg-white rounded-full transition-all duration-300" 
+                     style="width: ${gameState.attention}%"></div>
+            </div>
+        </div>
+    `;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+function getMarksForAgeAndCategory(age, category, isAuthentic) {
+    // Для подделок добавляем 100 лет (но не более 326)
+    const markAge = isAuthentic ? age : Math.min(326, age + 100);
+    const year = 2026 - markAge;
+    
+    const availableMarks = MARKS_BY_PERIOD[category] || [];
+    const suitableMarks = availableMarks.filter(m => 
+        year >= m.years[0] && year <= m.years[1]
+    );
+    
+    if (suitableMarks.length === 0) return [];
+    
+    // ДЕТЕРМИНИРОВАННЫЙ ВЫБОР КЛЕЙМ НА ОСНОВЕ ВОЗРАСТА И КАТЕГОРИИ
+    const hash = age + category.charCodeAt(0) + (isAuthentic ? 100 : 200);
+    const count = (hash % 2) + 1; // 1 или 2 клейма
+    const selected = [];
+    
+    for (let i = 0; i < count && suitableMarks.length > 0; i++) {
+        const markIndex = (hash + i) % suitableMarks.length;
+        selected.push(suitableMarks[markIndex].mark);
+    }
+    
+    return selected;
+}
+
+
+
+
+
+function fixExistingItems() {
+    // Обновляем стили для существующих предметов с учетом подлинности
+    gameState.inventory.forEach(item => {
+        if (!item.dominantStyle || item.dominantStyle.name === "неопределенный стиль") {
+            item.dominantStyle = assignDominantStyle(item);
+        } else if (item.dominantStyle.isFakeStyle === undefined) {
+            // Миграция: добавляем флаги к существующим стилям
+            item.dominantStyle.isFakeStyle = !item.authentic;
+            item.dominantStyle.fakeAge = !item.authentic ? Math.min(326, item.age + 100) : null;
+        }
+    });
+    
+    // Аналогично для предметов на продаже
+    gameState.sellingItems.forEach(item => {
+        if (!item.dominantStyle || item.dominantStyle.name === "неопределенный стиль") {
+            item.dominantStyle = assignDominantStyle(item);
+        } else if (item.dominantStyle.isFakeStyle === undefined) {
+            item.dominantStyle.isFakeStyle = !item.authentic;
+            item.dominantStyle.fakeAge = !item.authentic ? Math.min(326, item.age + 100) : null;
+        }
+    });
+    
+    // Аналогично для предметов на рынке
+    gameState.marketItems.forEach(item => {
+        if (!item.dominantStyle || item.dominantStyle.name === "неопределенный стиль") {
+            item.dominantStyle = assignDominantStyle(item);
+        } else if (item.dominantStyle.isFakeStyle === undefined) {
+            item.dominantStyle.isFakeStyle = !item.authentic;
+            item.dominantStyle.fakeAge = !item.authentic ? Math.min(326, item.age + 100) : null;
+        }
+    });
+}
+
+
+function checkMarksConsistency(item) {
+    if (!item.marks || item.marks.length === 0) {
+        return { consistent: null, reason: "Клейма отсутствуют" };
+    }
+
+    const year = 2026 - item.age;
+    let consistentCount = 0;
+    let totalCount = 0;
+    const inconsistencies = [];
+
+    item.marks.forEach(markText => {
+        totalCount++;
+        // Находим информацию о клейме в нашей базе
+        const categoryMarks = MARKS_BY_PERIOD[item.category] || [];
+        const markInfo = categoryMarks.find(m => m.mark === markText);
+        
+        if (markInfo) {
+            if (year >= markInfo.years[0] && year <= markInfo.years[1]) {
+                consistentCount++;
+            } else {
+                inconsistencies.push(`Клеймо "${markText}" не соответствует периоду (${markInfo.years[0]}-${markInfo.years[1]})`);
+            }
+        } else {
+            inconsistencies.push(`Неизвестное клеймо "${markText}"`);
+        }
+    });
+
+    const consistencyRatio = consistentCount / totalCount;
+    
+    if (consistencyRatio === 1) {
+        return { consistent: true, reason: "Все клейма соответствуют периоду", inconsistencies: [] };
+    } else if (consistencyRatio >= 0.5) {
+        return { consistent: "partial", reason: "Часть клейм не соответствует периоду", inconsistencies };
+    } else {
+        return { consistent: false, reason: "Большинство клейм не соответствуют периоду", inconsistencies };
+    }
+}
+
+
+
+
+
+
+function selectWeightedStyle(styles, year) {
+    const weights = styles.map(style => {
+        const styleDuration = style.years[1] - style.years[0];
+        const center = (style.years[0] + style.years[1]) / 2;
+        const distance = Math.abs(year - center);
+        
+        // Чем ближе к центру периода и чем дольше стиль существовал, тем вероятнее
+        return Math.max(0.1, (1 - (distance / styleDuration)) * (styleDuration / 50));
+    });
+    
+    const totalWeight = weights.reduce((sum, w) => sum + w, 0);
+    let random = Math.random() * totalWeight;
+    
+    for (let i = 0; i < styles.length; i++) {
+        random -= weights[i];
+        if (random <= 0) return styles[i];
+    }
+    
+    return styles[0];
+}
+
+
+
+
+function calculateSafeValue(basePrice, authentic, defects) {
+    let value = basePrice;
+    
+    // Штраф за подделку
+    if (!authentic) {
+        value = Math.round(value * (0.06 + Math.random() * 0.04));
+    }
+    
+    // Штраф за дефекты с ограничениями
+    if (defects && defects.length > 0) {
+        let totalSeverity = 0;
+        defects.forEach(defectName => {
+            const defect = getDefectByName(defectName);
+            const cappedSeverity = Math.min(0.3, defect.actualSeverity || 0.1);
+            totalSeverity += cappedSeverity;
+        });
+        
+        totalSeverity = Math.min(0.8, totalSeverity);
+        const severityMultiplier = Math.max(0.2, 1 - totalSeverity);
+        value = Math.round(value * severityMultiplier);
+    }
+    
+    // Гарантируем минимальную стоимость
+    return Math.max(50, value);
+}
+
+
+
+
+
+
+
+function generateStyleBasedAge(item) {
+    const style = item.dominantStyle;
+    if (!style) {
+        return { trueAge: 50, fakeAge: 100 };
+    }
+
+    // Реальный возраст на основе стиля
+    const styleMiddle = Math.round((style.years[0] + style.years[1]) / 2);
+    const trueAge = 2026 - styleMiddle;
+    
+    // Фейковый возраст для лжи (инверсия)
+    const fakeAge = Math.max(10, Math.min(326, trueAge + (Math.random() > 0.5 ? 80 : -80)));
+    
+    return { trueAge, fakeAge };
+}
+
+
+function analyzeDetailedCondition(item, isTruthful) {
+    const defects = item.defects || [];
+    
+    // КЛАССИФИЦИРУЕМ ДЕФЕКТЫ ПО ТЯЖЕСТИ
+    const criticalDefects = [];
+    const severeDefects = [];
+    const mediumDefects = [];
+    const minorDefects = [];
+
+    defects.forEach(defectName => {
+        const defect = getDefectByName(defectName);
+        const severity = defect.actualSeverity || 0.1;
+        
+        if (defect.difficulty === 'critical' || severity >= 0.5) {
+            criticalDefects.push(defectName);
+        } else if (defect.difficulty === 'hard' || severity >= 0.3) {
+            severeDefects.push(defectName);
+        } else if (defect.difficulty === 'medium' || severity >= 0.15) {
+            mediumDefects.push(defectName);
+        } else {
+            minorDefects.push(defectName);
+        }
+    });
+
+    // ДЛЯ ПРАВДИВОГО ОСКОЛКА - РЕАЛЬНОЕ ОПИСАНИЕ
+    if (isTruthful) {
+        let detailedDescription = "";
+        const parts = [];
+
+        // КРИТИЧЕСКИЕ ПОВРЕЖДЕНИЯ - ВСЕГДА ПЕРВЫМИ
+        if (criticalDefects.length > 0) {
+            const criticalText = criticalDefects.length === 1 ? 
+                `КРИТИЧЕСКОЕ повреждение: ${criticalDefects[0]}` :
+                `${criticalDefects.length} КРИТИЧЕСКИХ повреждения: ${criticalDefects.slice(0, 2).join(', ')}`;
+            parts.push(criticalText);
+        }
+
+        // СИЛЬНЫЕ ПОВРЕЖДЕНИЯ - СЛЕДУЮЩИМИ
+        if (severeDefects.length > 0) {
+            const severeText = severeDefects.length === 1 ?
+                `Сильное повреждение: ${severeDefects[0]}` :
+                `${severeDefects.length} сильных повреждения: ${severeDefects.slice(0, 2).join(', ')}`;
+            parts.push(severeText);
+        }
+
+        // СРЕДНИЕ ПОВРЕЖДЕНИЯ - ЕСЛИ ЕСТЬ МЕСТО
+        if (mediumDefects.length > 0 && parts.length < 2) {
+            const mediumText = mediumDefects.length === 1 ?
+                `Среднее повреждение: ${mediumDefects[0]}` :
+                `${mediumDefects.length} средних повреждения`;
+            parts.push(mediumText);
+        }
+
+        // МЕЛКИЕ ПОВРЕЖДЕНИЯ - ТОЛЬКО ЕСЛИ НЕТ ТЯЖЕЛЫХ
+        if (minorDefects.length > 0 && criticalDefects.length === 0 && severeDefects.length === 0) {
+            const minorText = minorDefects.length === 1 ?
+                `Незначительное повреждение: ${minorDefects[0]}` :
+                `${minorDefects.length} незначительных повреждения`;
+            parts.push(minorText);
+        }
+
+        // ЕСЛИ ВООБЩЕ НЕТ ДЕФЕКТОВ
+        if (parts.length === 0) {
+            parts.push("Идеальное состояние, без видимых повреждений");
+        }
+
+        detailedDescription = parts.join('\n• ');
+
+        return {
+            detailedDescription: detailedDescription,
+            defectBreakdown: {
+                critical: criticalDefects,
+                severe: severeDefects,
+                medium: mediumDefects,
+                minor: minorDefects
+            }
+        };
+    } 
+    // ДЛЯ ЛЖИВОГО ОСКОЛКА - ИНВЕРТИРОВАННОЕ ОПИСАНИЕ
+    else {
+        let detailedDescription = "";
+        const parts = [];
+
+        // ИНВЕРСИЯ: ПРЕУМЕНЬШАЕМ ТЯЖЕЛЫЕ ПОВРЕЖДЕНИЯ И ПРЕУВЕЛИЧИВАЕМ ЛЕГКИЕ
+        if (criticalDefects.length > 0) {
+            // Критические повреждения выдаем за средние
+            const fakeText = criticalDefects.length === 1 ?
+                `Среднее повреждение: ${criticalDefects[0]}` :
+                `${criticalDefects.length} средних повреждения`;
+            parts.push(fakeText);
+        } else if (severeDefects.length > 0) {
+            // Сильные повреждения выдаем за незначительные
+            const fakeText = severeDefects.length === 1 ?
+                `Незначительное повреждение: ${severeDefects[0]}` :
+                `${severeDefects.length} незначительных повреждения`;
+            parts.push(fakeText);
+        } else if (mediumDefects.length > 0) {
+            // Средние повреждения скрываем
+            parts.push("Идеальное состояние, без видимых повреждений");
+        } else if (minorDefects.length > 0) {
+            // Мелкие повреждения выдаем за серьезные
+            const fakeText = minorDefects.length === 1 ?
+                `Сильное повреждение: ${minorDefects[0]}` :
+                `${minorDefects.length} сильных повреждения`;
+            parts.push(fakeText);
+        } else {
+            // Идеальное состояние выдаем за поврежденное
+            parts.push("КРИТИЧЕСКОЕ повреждение: требует срочной реставрации");
+        }
+
+        detailedDescription = parts.join('\n• ');
+
+        return {
+            detailedDescription: detailedDescription,
+            defectBreakdown: {
+                critical: criticalDefects,
+                severe: severeDefects,
+                medium: mediumDefects,
+                minor: minorDefects
+            }
+        };
+    }
+}
+
+function renderStandardShard(shard) {
+    // Базовые цвета для разных категорий
+    let backgroundColor, borderColor, categoryText;
+    
+    switch (shard.category) {
+        case 'age':
+            backgroundColor = 'rgba(0, 100, 200, 0.1)';
+            borderColor = 'rgba(0, 80, 160, 0.4)';
+            categoryText = 'Возраст';
+            break;
+        case 'style':
+            backgroundColor = 'rgba(160, 100, 200, 0.1)';
+            borderColor = 'rgba(140, 80, 180, 0.4)';
+            categoryText = 'Стиль';
+            break;
+        case 'marks':
+            backgroundColor = 'rgba(255, 165, 0, 0.1)';
+            borderColor = 'rgba(200, 120, 0, 0.4)';
+            categoryText = 'Клейма';
+            break;
+        case 'authentic':
+            backgroundColor = 'rgba(0, 200, 0, 0.1)';
+            borderColor = 'rgba(0, 160, 0, 0.4)';
+            categoryText = 'Подлинность';
+            break;
+        case 'fake':
+            backgroundColor = 'rgba(200, 0, 0, 0.1)';
+            borderColor = 'rgba(160, 0, 0, 0.4)';
+            categoryText = 'Подделка';
+            break;
+        default:
+            backgroundColor = 'rgba(100, 150, 200, 0.1)';
+            borderColor = 'rgba(80, 120, 180, 0.4)';
+            categoryText = 'Информация';
+    }
+
+    // Добавляем присказку для режима игрока
+    let displayText = shard.text;
+    if (!gameState.isTesterMode) {
+        const phrase = getReliabilityPhrase(shard.reliability);
+        displayText = phrase + " " + shard.text.toLowerCase();
+    }
+
+    // Рендеринг для режима тестера
+    if (gameState.isTesterMode) {
+        let truthIndicator = '';
+        if (shard.isTruthful !== undefined) {
+            truthIndicator = `
+                <div class="text-xs px-2 py-1 rounded ${shard.isTruthful ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">
+                    ${shard.isTruthful ? '✅ Правда' : '❌ Ложь'}
+                </div>
+            `;
+        }
+
+        return `
+            <div class="border rounded-lg p-4 text-sm shadow-sm transition-all duration-300 hover:shadow-md" 
+                 style="background: ${backgroundColor}; border-color: ${borderColor}">
+                <div class="flex items-center gap-3">
+                    <div class="text-2xl">${shard.icon}</div>
+                    <div class="flex-1">
+                        <div class="flex justify-between items-start">
+                            <div class="font-semibold text-gray-800">${shard.type}</div>
+                            <div class="flex flex-col items-end gap-1">
+                                <div class="text-xs px-2 py-1 rounded bg-white border" style="border-color: ${borderColor}">
+                                    ${categoryText}
+                                </div>
+                                ${truthIndicator}
+                            </div>
+                        </div>
+                        <div class="text-gray-600 mt-1">${displayText}</div>
+                        <div class="flex items-center gap-2 mt-2">
+                            <div class="text-xs text-gray-500">Метод: ${shard.method}</div>
+                            <div class="flex-1 h-1 bg-gray-200 rounded-full overflow-hidden">
+                                <div class="h-full rounded-full transition-all duration-500" 
+                                     style="width: ${shard.reliability}%; background: ${borderColor}"></div>
+                            </div>
+                            <div class="text-xs text-gray-500">${shard.reliability}%</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    } else {
+        // Рендеринг для режима игрока (без полоски достоверности)
+        return `
+            <div class="border rounded-lg p-4 text-sm shadow-sm transition-all duration-300 hover:shadow-md" 
+                 style="background: ${backgroundColor}; border-color: ${borderColor}">
+                <div class="flex items-center gap-3">
+                    <div class="text-2xl">${shard.icon}</div>
+                    <div class="flex-1">
+                        <div class="flex justify-between items-start">
+                            <div class="font-semibold text-gray-800">${shard.type}</div>
+                            <div class="text-xs px-2 py-1 rounded bg-white border" style="border-color: ${borderColor}">
+                                ${categoryText}
+                            </div>
+                        </div>
+                        <div class="text-gray-600 mt-1">${displayText}</div>
+                        <div class="text-xs text-gray-500 mt-2">Метод: ${shard.method}</div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+}
+
+
+
+</script>
+<!-- Дебаг-консоль -->
+<div id="debugConsole" class="fixed bottom-0 left-0 right-0 bg-black bg-opacity-90 text-green-400 p-2 text-xs font-mono hidden">
+    <div class="flex justify-between items-center mb-1">
+        <span>🐛 Консоль отладки</span>
+        <button onclick="toggleDebugConsole()" class="text-white">[X]</button>
+    </div>
+    <div id="debugLog" class="max-h-20 overflow-y-auto"></div>
+</div>
+
+<script>
+// Простая система отладки
+let debugLog = [];
+
+function debug(message) {
+    const timestamp = new Date().toLocaleTimeString();
+    debugLog.push(`[${timestamp}] ${message}`);
+    
+    // Ограничиваем лог 20 сообщениями
+    if (debugLog.length > 20) {
+        debugLog.shift();
+    }
+    
+    // Обновляем отображение
+    const logElement = document.getElementById('debugLog');
+    if (logElement) {
+        logElement.innerHTML = debugLog.join('<br>');
+        logElement.scrollTop = logElement.scrollHeight;
+    }
+    
+    // Также в настоящую консоль если есть
+    if (typeof console !== 'undefined') {
+        console.log(message);
+    }
+}
+
+// Показываем консоль при двойном клике на заголовок
+document.addEventListener('dblclick', function(e) {
+    if (e.target.closest('h1')) {
+        toggleDebugConsole();
+    }
+});
+
+// Добавляем отладку в проблемные функции
+const originalNextDay = window.nextDay;
+window.nextDay = function() {
+    debug('nextDay: начал выполнение');
+    debug('День до: ' + gameState.day);
+    debug('Деньги до: ' + gameState.money);
+    
+    try {
+        originalNextDay();
+        debug('nextDay: завершил успешно');
+        debug('День после: ' + gameState.day);
+        debug('Деньги после: ' + gameState.money);
+    } catch (error) {
+        debug('nextDay: ОШИБКА - ' + error.message);
+    }
+};
+
+// Отладка для generateMarket
+const originalGenerateMarket = window.generateMarket;
+window.generateMarket = function() {
+    debug('generateMarket: начал');
+    try {
+        originalGenerateMarket();
+        debug('generateMarket: создано ' + gameState.marketItems.length + ' предметов');
+    } catch (error) {
+        debug('generateMarket: ОШИБКА - ' + error.message);
+    }
+};
+
+// Автопоказ консоли при ошибках
+window.addEventListener('error', function(e) {
+    debug('Глобальная ошибка: ' + e.message);
+    document.getElementById('debugConsole').classList.remove('hidden');
+});
+
+
+
+
+function toggleGameMode() {
+    gameState.isTesterMode = !gameState.isTesterMode;
+    const heartButton = document.querySelector('.heart-toggle');
+    
+    if (gameState.isTesterMode) {
+        heartButton.innerHTML = '❤️';
+        showNotification('🔧 Режим тестера включен', 'info');
+    } else {
+        heartButton.innerHTML = '🤍';
+        showNotification('🎮 Режим игрока включен', 'success');
+    }
+    
+    // ПЕРЕРИСОВЫВАЕМ ВСЕ ИНТЕРФЕЙСЫ, КОТОРЫЕ МОГУТ ЗАВИСЕТЬ ОТ РЕЖИМА
+    if (currentExpertise) {
+        renderShards(); // Перерисовываем осколки
+    }
+    
+    // Перерисовываем инвентарь для отображения измененной информации
+    if (document.getElementById('content-inventory').classList.contains('hidden') === false) {
+        renderInventory();
+    }
+    
+    // Перерисовываем окно продажи если оно открыто
+    if (currentSell) {
+        renderSellModal();
+    }
+    
+    saveGame();
+}
+
+// ==============================================
+// ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ДЛЯ РАБОТЫ С РЕЖИМАМИ
+// ==============================================
+
+function isTesterMode() {
+    return gameState.isTesterMode === true;
+}
+
+function isPlayerMode() {
+    return !gameState.isTesterMode;
+}
+
+// Функция для получения текущего режима (для отладки)
+function getCurrentMode() {
+    return gameState.isTesterMode ? "тестера" : "игрока";
+}
+
+
+
+
+
+
+// A. Факт наличия реставрации (ИСПРАВЛЕННЫЙ)
+function generateRestorationPresenceFact(item, isTruthful, reliability, isPlayerMode = false) {
+  const hasRestoration = item.restoration && item.restoration !== 'none';
+  
+  let text;
+  if (isPlayerMode) {
+    // РЕЖИМ ИГРОКА: Учитываем правдивость
+    if (isTruthful) {
+      const phrases = hasRestoration ?
+        UV_ANALYSIS.PLAYER_MODE_PHRASES.restoration_presence :
+        UV_ANALYSIS.PLAYER_MODE_PHRASES.restoration_absence;
+      text = phrases[Math.floor(Math.random() * phrases.length)];
+    } else {
+      // ЛОЖНЫЙ ФАКТ для режима игрока
+      const phrases = hasRestoration ?
+        // Если на самом деле ЕСТЬ реставрация, показываем, что её нет
+        UV_ANALYSIS.PLAYER_MODE_PHRASES.restoration_absence :
+        // Если на самом деле НЕТ реставрации, показываем, что есть
+        UV_ANALYSIS.PLAYER_MODE_PHRASES.restoration_presence;
+      text = phrases[Math.floor(Math.random() * phrases.length)];
+    }
+  } else {
+    // РЕЖИМ ТЕСТЕРА: как было
+    if (isTruthful) {
+      text = hasRestoration ? "Реставрация: присутствует" : "Реставрация: отсутствует";
+    } else {
+      text = hasRestoration ? "Реставрация: отсутствует" : "Реставрация: присутствует";
+    }
+  }
+  
+  return {
+    type: 'restoration_presence',
+    text: text,
+    reliability: Math.round(reliability),
+    isTruthful: isTruthful
+  };
+}
+
+
+
+function renderUVShard(shard) {
+    const backgroundColor = 'rgba(128, 0, 128, 0.1)';
+    const borderColor = 'rgba(100, 0, 100, 0.4)';
+    
+    // Для режима игрока просто выводим текст как есть
+    if (!gameState.isTesterMode) {
+        return `
+            <div class="border rounded-lg p-4 text-sm shadow-sm transition-all duration-300 hover:shadow-md" 
+                 style="background: ${backgroundColor}; border-color: ${borderColor}">
+                <div class="text-gray-700 whitespace-pre-line">${shard.text}</div>
+                <div class="mt-2 text-xs text-gray-500">
+                    💡 Использовано УФ: ${shard.uvData?.uses || 1} раз
+                </div>
+            </div>
+        `;
+    }
+    
+    // РЕЖИМ ТЕСТЕРА - с детальной информацией
+    let factsHTML = '';
+    
+    if (shard.facts && shard.facts.length > 0) {
+        factsHTML = shard.facts.map(fact => {
+            const borderColor = fact.isTruthful ? '#10b981' : '#ef4444';
+            const bgColor = fact.isTruthful ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)';
+            
+            // Для фактов с возрастом добавляем дополнительную информацию
+            let ageInfo = '';
+            if (fact.type === 'age_original' || fact.type === 'age_restoration') {
+                const actualAge = fact.type === 'age_original' ? 
+                    (fact.actualAge || '?') : 
+                    (fact.actualRestorationAge || '?');
+                ageInfo = `<div class="text-xs text-gray-600 mt-1">Реальный возраст: ${actualAge} лет</div>`;
+            }
+            
+            return `
+                <div class="flex items-start gap-2 p-2 rounded border" 
+                     style="background: ${bgColor}; border-color: ${borderColor}">
+                    <div class="flex-shrink-0 text-sm mt-0.5">${fact.isTruthful ? '✅' : '❌'}</div>
+                    <div class="flex-1">
+                        <div class="text-gray-700">${fact.text}</div>
+                        <div class="flex items-center gap-2 mt-1">
+                            <div class="flex-1 h-1 bg-gray-200 rounded-full overflow-hidden">
+                                <div class="h-full rounded-full transition-all duration-500" 
+                                     style="width: ${fact.reliability}%; background: ${borderColor}"></div>
+                            </div>
+                            <div class="text-xs ${fact.isTruthful ? 'text-green-600' : 'text-red-600'}">
+                                ${fact.reliability}%
+                            </div>
+                        </div>
+                        ${ageInfo}
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+    
+    // Индикатор использования
+    const usesIndicator = `
+        <div class="text-xs px-2 py-1 rounded bg-purple-100 text-purple-800">
+            🔄 ${shard.uvData?.uses || 1} использование
+        </div>
+    `;
+    
+    return `
+        <div class="border rounded-lg p-4 text-sm shadow-sm transition-all duration-300 hover:shadow-md" 
+             style="background: ${backgroundColor}; border-color: ${borderColor}">
+            <div class="flex items-center gap-3 mb-3">
+                <div class="text-2xl">${shard.icon}</div>
+                <div class="flex-1">
+                    <div class="flex justify-between items-center">
+                        <div class="font-semibold text-gray-800">${shard.type}</div>
+                        <div class="flex items-center gap-2">
+                            ${usesIndicator}
+                            <div class="text-xs px-2 py-1 rounded bg-white border" style="border-color: ${borderColor}">
+                                ${shard.reliability}%
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Отдельные факты -->
+            <div class="space-y-2">
+                ${factsHTML}
+            </div>
+            
+            <div class="flex items-center gap-2 mt-3 pt-2 border-t border-gray-200">
+                <div class="text-xs text-gray-500">Метод: ${shard.method}</div>
+                <div class="text-xs ${shard.falseFactsCount > 0 ? 'text-red-500' : 'text-green-500'}">
+                    Правдивость: ${shard.totalFacts - shard.falseFactsCount}/${shard.totalFacts}
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+
+function renderInternetShard(shard) {
+    const backgroundColor = 'rgba(100, 149, 237, 0.1)'; // Cornflower blue
+    const borderColor = 'rgba(65, 105, 225, 0.4)'; // Royal blue
+    
+    // Для режима игрока просто выводим текст как есть
+    if (!gameState.isTesterMode) {
+        return `
+            <div class="border rounded-lg p-4 text-sm shadow-sm transition-all duration-300 hover:shadow-md" 
+                 style="background: ${backgroundColor}; border-color: ${borderColor}">
+                <div class="text-gray-700 whitespace-pre-line">${shard.text}</div>
+                <div class="mt-2 text-xs text-gray-500">
+                    💻 ${shard.internetData?.factCount || 1} факт(а) из интернета
+                </div>
+            </div>
+        `;
+    }
+    
+    // РЕЖИМ ТЕСТЕРА - с детальной информацией
+    let factsHTML = '';
+    
+    if (shard.facts && shard.facts.length > 0) {
+        factsHTML = shard.facts.map(fact => {
+            let borderColor, bgColor, icon;
+            
+            if (fact.isConfused) {
+                borderColor = '#f59e0b'; // Желтый для неопределенности
+                bgColor = 'rgba(245, 158, 11, 0.1)';
+                icon = '🤷‍♂️';
+            } else if (fact.isTruthful) {
+                borderColor = '#10b981'; // Зеленый для правды
+                bgColor = 'rgba(16, 185, 129, 0.1)';
+                icon = '✅';
+            } else {
+                borderColor = '#ef4444'; // Красный для лжи
+                bgColor = 'rgba(239, 68, 68, 0.1)';
+                icon = '❌';
+            }
+            
+            let extraInfo = '';
+            if (fact.type === 'price' && fact.reportedLower && fact.reportedUpper) {
+                extraInfo = `<div class="text-xs text-gray-600 mt-1">Реальная идеальная цена: ${formatMoney(fact.actualPrice)}</div>`;
+            } else if (fact.type === 'style' && fact.actualStyle) {
+                extraInfo = `<div class="text-xs text-gray-600 mt-1">Реальный стиль: ${fact.actualStyle}</div>`;
+            } else if (fact.type === 'authenticity') {
+                extraInfo = `<div class="text-xs text-gray-600 mt-1">Реально: ${fact.actualAuthentic ? 'подлинник' : 'подделка'}</div>`;
+            }
+            
+            return `
+                <div class="flex items-start gap-2 p-2 rounded border" 
+                     style="background: ${bgColor}; border-color: ${borderColor}">
+                    <div class="flex-shrink-0 text-sm mt-0.5">${icon}</div>
+                    <div class="flex-1">
+                        <div class="text-gray-700">${fact.text}</div>
+                        <div class="flex items-center gap-2 mt-1">
+                            <div class="flex-1 h-1 bg-gray-200 rounded-full overflow-hidden">
+                                <div class="h-full rounded-full transition-all duration-500" 
+                                     style="width: ${fact.reliability}%; background: ${borderColor}"></div>
+                            </div>
+                            <div class="text-xs ${fact.isConfused ? 'text-yellow-600' : fact.isTruthful ? 'text-green-600' : 'text-red-600'}">
+                                ${fact.reliability}%
+                            </div>
+                        </div>
+                        ${extraInfo}
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+    
+    // Индикатор использования
+    const usesText = shard.internetData?.uses === 1 ? "1 использование" :
+        shard.internetData?.uses === 2 ? "2 использования" :
+        "3 использования";
+    
+    return `
+        <div class="border rounded-lg p-4 text-sm shadow-sm transition-all duration-300 hover:shadow-md" 
+             style="background: ${backgroundColor}; border-color: ${borderColor}">
+            <div class="flex items-center gap-3 mb-3">
+                <div class="text-2xl">${shard.icon}</div>
+                <div class="flex-1">
+                    <div class="flex justify-between items-center">
+                        <div class="font-semibold text-gray-800">${shard.type}</div>
+                        <div class="flex items-center gap-2">
+                            <div class="text-xs px-2 py-1 rounded bg-blue-100 text-blue-800">
+                                ${usesText}
+                            </div>
+                            <div class="text-xs px-2 py-1 rounded bg-white border" style="border-color: ${borderColor}">
+                                ${shard.reliability}%
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Отдельные факты -->
+            <div class="space-y-2">
+                ${factsHTML}
+            </div>
+            
+            <div class="flex items-center gap-2 mt-3 pt-2 border-t border-gray-200">
+                <div class="text-xs text-gray-500">Метод: ${shard.method}</div>
+                <div class="text-xs text-blue-500">${shard.internetData?.factCount || 1} факт(а)</div>
+            </div>
+        </div>
+    `;
+}
+
+
+
+
+
+
+function getReliabilityPhrase(reliability) {
+    if (reliability <= 10) return "Слухи гласят, что";
+    if (reliability <= 20) return "Есть сомнительные сведения, что";
+    if (reliability <= 30) return "Некоторые полагают, что";
+    if (reliability <= 40) return "Есть предположение, что";
+    if (reliability <= 50) return "Вероятно, что";
+    if (reliability <= 60) return "Достаточно вероятно, что";
+    if (reliability <= 70) return "Скорее всего,";
+    if (reliability <= 80) return "Можно с уверенностью сказать, что";
+    if (reliability <= 90) return "Почти наверняка,";
+    return "Точно известно, что";
+}
+
+
+function determineRestoration(age) {
+    // Вероятность реставрации по возрасту: 10% для 0 лет, 80% для 300+ лет
+    const minRestorationChance = 0.10;
+    const maxRestorationChance = 0.80;
+    const maxAgeForIncrease = 300;
+    
+    const ageFactor = Math.min(age, maxAgeForIncrease) / maxAgeForIncrease;
+    const restorationChance = minRestorationChance + (maxRestorationChance - minRestorationChance) * ageFactor;
+    
+    // Проверяем, есть ли реставрация
+    if (Math.random() > restorationChance) {
+        return null; // Реставрации нет
+    }
+    
+    // Выбираем тип реставрации по распределению
+    const random = Math.random();
+    let cumulative = 0;
+    
+    for (const [type, data] of Object.entries(RESTORATION_TYPES)) {
+        cumulative += data.chance;
+        if (random <= cumulative) {
+            return type;
+        }
+    }
+    
+    return "rough"; // fallback
+}
+
+
+function applyRestorationEffects(item) {
+    if (!item.restoration) {
+        return; // Нет реставрации - нет изменений
+    }
+    
+    const restorationData = RESTORATION_TYPES[item.restoration];
+    
+    // 1. ВСЕГДА применяем штраф к реальной стоимости (кроме профессиональной)
+    if (restorationData.realValuePenalty > 0) {
+        item.realValue = Math.round(item.realValue * (1 - restorationData.realValuePenalty));
+        // Гарантируем минимальную стоимость
+        item.realValue = Math.max(50, item.realValue);
+    }
+    
+    // 2. Продавец применяет штраф к своей цене ТОЛЬКО если видит реставрацию
+    const sellerSeesRestoration = Math.random() < restorationData.sellerVisibility;
+    if (sellerSeesRestoration && restorationData.realValuePenalty > 0) {
+        item.askingPrice = Math.round(item.askingPrice * (1 - restorationData.realValuePenalty));
+        item.askingPrice = Math.max(100, item.askingPrice);
+    }
+    
+    // 3. Добавляем модификатор отображения для режима тестера
+    if (!item.modifiers) item.modifiers = [];
+    if (!item.modifiersDisplay) item.modifiersDisplay = [];
+    
+    const restorationModifier = restorationData.display;
+    item.modifiers.push(restorationModifier);
+    item.modifiersDisplay.push(restorationModifier);
+}
+
+function checkRentAbilityAndSurvive() {
+    // Получаем доступ к глобальному состоянию
+    const state = window.gameState || gameState;
+    const level = state.officeLevel || 0;
+    
+    // Если мы уже на самом дне (-2), то падать некуда -> Банкрот
+    if (level <= -2) {
+        showNotification('Денег нет, и продавать больше нечего...', 'error');
+        return false;
+    }
+    
+    // Определяем, куда упадем
+    const prevLevel = level - 1;
+    // Конвертируем в строки для доступа к конфигу
+    const prevConfig = OFFICE_CONFIG[String(prevLevel)];
+    const currentConfig = OFFICE_CONFIG[String(level)];
+    
+    if (!prevConfig) {
+        console.error("Ошибка конфига при попытке продажи мебели!");
+        return false;
+    }
+    
+    // Награда за продажу - берем из уровня, КУДА падаем (sellReward)
+    // Либо можно настроить иначе, но логично: "Упал в -1, получил 3000"
+    const reward = prevConfig.sellReward;
+    
+    // Текст подтверждения
+    let message = `⚠️ КРИЗИС: НЕХВАТКА ДЕНЕГ!\n\n`;
+    message += `У вас нет 500₽ на аренду. Вас выселят.\n`;
+    message += `Единственный шанс: продать обстановку "${currentConfig.name}".\n\n`;
+    message += `💰 Вы получите: +${reward}₽\n`;
+    message += `📉 Условия станут хуже: "${prevConfig.name}"\n`;
+    message += `⚡ Энергия: ${prevConfig.energyMod > 0 ? '+' : ''}${prevConfig.energyMod} в день\n\n`;
+    message += `Продать мебель и продолжить игру?`;
+    
+    // Используем стандартный confirm для надежности на этом этапе
+    if (confirm(message)) {
+        // Продаем
+        state.money += reward;
+        state.officeLevel = prevLevel;
+        
+        showNotification(`Вы продали мебель за ${reward}₽`, 'warning');
+        console.log(`📉 Офис понижен до уровня ${prevLevel}. Баланс: ${state.money}`);
+        
+        // Обновляем картинку стола сразу (чтобы игрок увидел последствия)
+        if (typeof updateOfficeVisuals === 'function') updateOfficeVisuals();
+        
+        return true; // Игрок выжил (вернул true)
+    } else {
+        return false; // Игрок сдался (вернул false) -> Game Over
+    }
+}
+
+function renderGoldenShardItem(shard) {
+    return `
+        <div class="golden-shard-item bg-white rounded p-2 mb-2 border-l-4 border-yellow-500 shadow-sm">
+            <div class="flex items-start gap-2">
+                <span class="text-yellow-500">✨</span>
+                <div class="flex-1">
+                    <div class="text-sm text-gray-800">${shard.text}</div>
+                    <div class="text-xs text-yellow-600 mt-1">×${shard.multiplier} к цене</div>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+function renderRestorationInfo(item) {
+    if (!item.restoration || !item.expertiseDone || !gameState.isTesterMode) {
+        return '';
+    }
+    
+    const restorationData = RESTORATION_TYPES[item.restoration];
+    const penaltyText = restorationData.realValuePenalty > 0 ? 
+        ` (штраф -${Math.round(restorationData.realValuePenalty * 100)}%)` : 
+        ' (без штрафа)';
+    
+    return `
+        <div class="text-xs mt-2 p-2 bg-blue-50 rounded border border-blue-200">
+            <div class="font-semibold text-blue-700">🛠️ Реставрация</div>
+            <div class="text-blue-600">${restorationData.name}${penaltyText}</div>
+            <div class="text-blue-500 text-xs">Видимость для продавца: ${Math.round(restorationData.sellerVisibility * 100)}%</div>
+        </div>
+    `;
+}
+</script>
+<script src="ui.js">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// ==============================================
+// ОБНОВЛЕННАЯ ИНИЦИАЛИЗАЦИЯ ИГРЫ
+// ==============================================
+
+
+
+
+// ==============================================
+// СИСТЕМА ОБРАЗЦОВ ДЛЯ ЭКСПЕРТИЗЫ (🧠)
+// ==============================================
+
+
+// ==============================================
+// ИНИЦИАЛИЗАЦИЯ КОНФИГУРАТОРА ЗОН
+// ==============================================
+
+function initZonesConfigurator() {
+    console.log("Инициализация конфигуратора зон...");
+    
+    // Загружаем конфигурацию
+    loadZonesConfig();
+    
+    // Рендерим превью
+    renderZonesPreview();
+    
+    // Рендерим панель свойств
+    renderZonePropertiesPanel();
+    
+    // Обработчик клика по фону для снятия выделения
+    const previewOverlay = document.getElementById('zones-preview-overlay');
+    if (previewOverlay) {
+        previewOverlay.addEventListener('click', (e) => {
+            if (e.target === previewOverlay) {
+                selectZone(null);
+            }
+        });
+    }
+    
+    // Добавляем базовые функции если они еще не существуют
+    if (!window.loadZonesConfig) {
+        window.loadZonesConfig = function() {
+            console.log("Функция loadZonesConfig не найдена, загружаем файл zones.js");
+        };
+    }
+}
+
+// Экспортируем функции для глобального использования
+window.initZonesConfigurator = initZonesConfigurator;
+window.switchTab = switchTab; // Переопределяем на обновленную версию
+
+</script>
+
+<!-- Добавляем в HTML перед закрывающим тегом </body>: -->
+<div id="tacticUnlockModal" class="fixed inset-0 modal-backdrop flex items-center justify-center z-50 hidden">
+    <div class="bg-white rounded-lg shadow-2xl p-6 mx-4 max-w-md w-full">
+        <div class="text-center mb-4">
+            <div class="text-6xl mb-4">🎓</div>
+            <h2 class="text-2xl font-bold mb-2">Новый приём торга!</h2>
+            <div class="bg-gradient-to-r from-blue-50 to-purple-50 border-2 border-blue-200 rounded-lg p-4 mb-4">
+                <div class="text-3xl mb-2" id="unlockedTacticIcon">🚶</div>
+                <div class="text-xl font-bold mb-2" id="unlockedTacticName">Делать вид что ухожу</div>
+                <p class="text-gray-700 text-sm" id="unlockedTacticMessage">
+                    Вы подсмотрели как торгуются другие и изучили новую тактику!
+                </p>
+            </div>
+            <button onclick="closeTacticUnlockModal()" 
+                    class="w-full bg-gradient-to-r from-green-500 to-emerald-600 text-white py-3 rounded-lg font-semibold hover:shadow-lg transition">
+                Теперь я знаю как правильно торговаться
+            </button>
+        </div>
+    </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,978 @@
+/* ============================================
+   ANTIQUE GAME - STYLES
+   Версия: 2.0 (очищенная)
+   ============================================ */
+
+/* === ПЕРЕМЕННЫЕ === */
+:root {
+    --bg-main: #1c2933;
+    --bg-panel: #2e3c49;
+    --bg-panel-alt: #364656;
+    --accent-gold: #c5a166;
+    --accent-red: #e03b3b;
+    --text-main: #f4f2e8;
+    --text-muted: #9da8b4;
+    --border-light: #6f7c8a;
+    --border-dark: #11171d;
+}
+
+/* === БАЗОВЫЕ СТИЛИ === */
+body {
+    background: var(--bg-main) !important;
+    color: var(--text-main) !important;
+    font-family: 'Silkscreen', cursive !important;
+    font-size: 14px !important;
+    line-height: 1.4 !important;
+    margin: 0;
+    padding: 0;
+}
+
+/* === КАРТОЧКИ === */
+.card {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    background: var(--bg-panel) !important;
+    border: 4px solid var(--border-dark) !important;
+    box-shadow: 0 0 0 2px var(--border-light) !important;
+    border-radius: 2px !important;
+}
+
+.card:hover {
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+}
+
+/* === КНОПКИ === */
+button {
+    border-radius: 0 !important;
+    font-family: 'Silkscreen', cursive !important;
+    font-size: 10px !important;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border: 2px solid var(--border-dark) !important;
+    transition: all 0.1s ease;
+    cursor: pointer;
+}
+
+button:active {
+    transform: scale(0.95);
+}
+
+button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Градиентные кнопки */
+.bg-gradient-to-r.from-blue-500.to-indigo-600,
+.bg-gradient-to-r.from-purple-500.to-indigo-600 {
+    background: var(--bg-panel-alt) !important;
+    border: 3px solid var(--border-dark) !important;
+    box-shadow: 0 0 0 1px var(--border-light) !important;
+    color: var(--text-main) !important;
+}
+
+/* Кнопка следующего дня */
+.bg-gradient-to-r.from-purple-500.to-indigo-600 {
+    background: var(--accent-red) !important;
+}
+
+/* === ВКЛАДКИ === */
+button.px-6.py-3.font-semibold {
+    background: var(--bg-panel) !important;
+    border: 3px solid var(--border-dark) !important;
+    border-bottom: 3px solid var(--border-dark) !important;
+    margin-bottom: -3px !important;
+    font-size: 10px !important;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.tab-active {
+    background: var(--bg-panel-alt) !important;
+    border: 3px solid var(--border-light) !important;
+    border-bottom: 3px solid var(--bg-panel-alt) !important;
+}
+
+.flex.border-b {
+    border-bottom: 3px solid var(--border-dark) !important;
+    background: var(--bg-panel) !important;
+}
+
+/* === ИНФО-БЛОКИ (деньги, день, репутация) === */
+.bg-gradient-to-r.from-green-400.to-green-600 {
+    background: var(--accent-gold) !important;
+    border: 2px solid var(--border-dark) !important;
+}
+
+.bg-gradient-to-r.from-blue-400.to-blue-600 {
+    background: var(--bg-panel-alt) !important;
+    border: 2px solid var(--border-dark) !important;
+}
+
+.bg-gradient-to-r.from-yellow-400.to-orange-500 {
+    background: var(--bg-panel) !important;
+    border: 2px solid var(--border-dark) !important;
+}
+
+/* === ПРОГРЕСС-БАРЫ === */
+.bg-gray-200.rounded-full {
+    background: var(--border-dark) !important;
+    border: 3px solid var(--border-dark) !important;
+    box-shadow: inset 0 0 0 2px var(--bg-panel-alt) !important;
+    height: 16px !important;
+    border-radius: 2px !important;
+}
+
+.bg-gray-200.rounded-full .bg-yellow-500,
+.bg-gradient-to-r.from-green-400.to-green-600.h-4.rounded-full,
+.bg-gradient-to-r.from-yellow-400.to-orange-500.h-4.rounded-full {
+    background: var(--accent-gold) !important;
+    border: 2px solid var(--border-dark) !important;
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,0.2) !important;
+    border-radius: 2px !important;
+}
+
+/* === МОДАЛЬНЫЕ ОКНА === */
+.modal-backdrop {
+    backdrop-filter: blur(8px);
+    background: rgba(0, 0, 0, 0.6);
+}
+
+.bg-white.rounded-lg.shadow-2xl,
+.bg-white.rounded-lg {
+    border: 4px solid var(--border-dark) !important;
+    box-shadow: 0 0 0 2px var(--border-light), 8px 8px 0 var(--border-dark) !important;
+    background: var(--bg-panel) !important;
+}
+
+/* === ФОРМЫ === */
+#expertiseModal input, 
+#expertiseModal select,
+#sellModal input, 
+#sellModal select,
+#avitoPrice {
+    background: var(--bg-panel) !important;
+    border: 3px solid var(--border-dark) !important;
+    color: var(--text-main) !important;
+    padding: 8px 12px !important;
+    font-family: 'Silkscreen', cursive !important;
+    font-size: 10px !important;
+    width: 100% !important;
+    box-shadow: 0 0 0 1px var(--border-light) !important;
+}
+
+#expertiseModal input:focus, 
+#expertiseModal select:focus,
+#sellModal input:focus, 
+#sellModal select:focus,
+#avitoPrice:focus {
+    border-color: var(--accent-gold) !important;
+    outline: none !important;
+    box-shadow: 0 0 0 2px rgba(197, 161, 102, 0.3) !important;
+}
+
+/* === УВЕДОМЛЕНИЯ === */
+.notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1000;
+    animation: slideIn 0.3s ease-out;
+    max-width: 400px;
+    border: 3px solid var(--border-dark) !important;
+    box-shadow: 0 0 0 2px var(--border-light) !important;
+    border-radius: 0 !important;
+    font-size: 10px !important;
+}
+
+.avito-notification {
+    border: 3px solid var(--accent-gold) !important;
+    box-shadow: 0 0 20px rgba(245, 158, 11, 0.5) !important;
+}
+
+/* === ОСКОЛКИ ЗНАНИЙ === */
+.shard-card {
+    transition: all 0.3s ease;
+    border-left: 4px solid;
+}
+
+.shard-visual { border-left-color: #3b82f6; background: rgba(59, 130, 246, 0.05); }
+.shard-loupe { border-left-color: #8b5cf6; background: rgba(139, 92, 246, 0.05); }
+.shard-uv { border-left-color: #f59e0b; background: rgba(245, 158, 11, 0.05); }
+.shard-chemical { border-left-color: #10b981; background: rgba(16, 185, 129, 0.05); }
+.shard-expert { border-left-color: #ef4444; background: rgba(239, 68, 68, 0.05); }
+
+.clue-item {
+    border-left: 4px solid #8b5cf6;
+    margin: 8px 0;
+    animation: clueAppear 0.5s ease-out;
+    background: linear-gradient(90deg, rgba(139, 92, 246, 0.05) 0%, transparent 100%);
+    border-radius: 4px;
+    padding: 8px 12px;
+}
+
+/* === ТАКТИКИ ТОРГА === */
+.tactic-btn {
+    transition: all 0.2s;
+    position: relative;
+    overflow: hidden;
+    background: #4a5568;
+    border: 2px solid #2d3748;
+    color: white;
+    padding: 8px 4px;
+    font-size: 10px;
+    line-height: 1.2;
+    text-align: center;
+    border-radius: 4px;
+    cursor: pointer;
+    min-height: 50px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    white-space: normal !important;
+    word-break: break-word !important;
+}
+
+.tactic-btn:hover:not(:disabled) {
+    background: #5a6578;
+    border-color: #4a5568;
+    transform: translateY(-2px);
+}
+
+.tactic-btn:disabled {
+    background: #2d3748;
+    color: #718096;
+    border-color: #4a5568;
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+/* === ДЕФЕКТЫ И РЕСТАВРАЦИЯ === */
+.defect-easy { border-left-color: var(--accent-gold) !important; background: rgba(197, 161, 102, 0.1) !important; }
+.defect-medium { border-left-color: var(--accent-gold) !important; background: rgba(197, 161, 102, 0.2) !important; }
+.defect-hard { border-left-color: var(--accent-red) !important; background: rgba(224, 59, 59, 0.2) !important; }
+.defect-critical { border-left-color: var(--accent-red) !important; background: rgba(224, 59, 59, 0.3) !important; }
+
+.restoration-risk-high { border-left-color: #ef4444; }
+.restoration-risk-medium { border-left-color: #f59e0b; }
+.restoration-risk-low { border-left-color: #10b981; }
+
+/* === КОНКУРЕНТЫ === */
+.competitors-container {
+    max-height: 64px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: #c1c1c1 #f1f1f1;
+}
+
+.competitor-item {
+    font-size: 0.7rem;
+    line-height: 1.2;
+    padding: 3px 4px;
+    margin: 1px 0;
+    background: rgba(255, 255, 255, 0.7);
+    border-radius: 4px;
+    border-left: 2px solid;
+    text-align: left;
+    word-break: break-word;
+    transition: all 0.2s ease;
+}
+
+.competitor-safe { border-left-color: #10b981; background: rgba(16, 185, 129, 0.05); }
+.competitor-medium { border-left-color: #f59e0b; background: rgba(245, 158, 11, 0.05); }
+.competitor-danger { border-left-color: #ef4444; background: rgba(239, 68, 68, 0.05); }
+
+/* === TAILWIND ПЕРЕОПРЕДЕЛЕНИЯ === */
+.bg-white {
+    background: var(--bg-panel) !important;
+}
+
+/* ИСПРАВЛЕНИЕ: Добавлены .bg-red-* и .bg-rose-* чтобы убрать розовые фоны */
+.bg-gray-50, .bg-blue-50, .bg-purple-50, .bg-green-50, .bg-orange-50, .bg-yellow-50,
+.bg-red-50, .bg-red-100, .bg-rose-50, .bg-rose-100 {
+    background: var(--bg-panel-alt) !important;
+    border: 2px solid var(--border-dark) !important;
+    color: var(--text-main) !important; /* Форсируем цвет текста, чтобы он не был темно-красным на темном фоне */
+}
+
+/* Дополнительно исправляем текст ошибок, чтобы он был ярко-красным, а не темно-бордовым */
+.text-red-600, .text-red-700, .text-red-800, 
+.text-rose-600, .text-rose-700, .text-rose-800 {
+    color: var(--accent-red) !important;
+}
+
+.bg-gray-100 {
+    background: var(--bg-panel-alt) !important;
+}
+
+.hover\:bg-gray-100:hover {
+    background: var(--bg-panel-alt) !important;
+}
+
+.text-gray-600, .text-gray-500, .text-gray-700 {
+    color: var(--text-muted) !important;
+}
+
+.text-gray-800 {
+    color: var(--text-main) !important;
+}
+
+/* Логотип */
+.bg-gradient-to-r.from-purple-600.to-indigo-600.bg-clip-text.text-transparent {
+    background: linear-gradient(90deg, var(--accent-gold), var(--accent-red)) !important;
+    -webkit-background-clip: text !important;
+    background-clip: text !important;
+}
+
+/* Детали сделки */
+.deal-details {
+    background: var(--bg-panel-alt) !important;
+    border-top: 2px solid var(--border-dark) !important;
+}
+
+.deal-row {
+    transition: background 0.2s;
+    cursor: pointer;
+}
+
+.deal-row:hover {
+    background: rgba(139, 92, 246, 0.05) !important;
+}
+
+.border-b {
+    border-bottom: 1px solid var(--border-dark) !important;
+}
+
+/* === СЛОЖНОСТЬ === */
+.difficulty-card {
+    transition: all 0.3s;
+    cursor: pointer;
+}
+
+.difficulty-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+}
+
+.difficulty-selected {
+    border: 3px solid #8b5cf6;
+    background: linear-gradient(135deg, #f3e8ff 0%, #e9d5ff 100%);
+}
+
+/* === ЦИТАТЫ ПРОДАВЦА === */
+.seller-quote {
+    font-style: italic;
+    padding: 12px;
+    background: rgba(0,0,0,0.03);
+    border-radius: 8px;
+    margin: 8px 0;
+    position: relative;
+}
+
+.seller-quote::before {
+    content: '"';
+    font-size: 48px;
+    position: absolute;
+    left: 8px;
+    top: -8px;
+    opacity: 0.2;
+}
+
+/* === ВНИМАНИЕ (ГЛАЗА) === */
+.attention-eye-low {
+    opacity: 0.6;
+    transform: scale(0.9);
+}
+
+.attention-eye-critical {
+    opacity: 0.3;
+    transform: scale(0.8);
+    filter: grayscale(0.7);
+}
+
+/* === СЕРДЕЧКИ === */
+.heart-toggle {
+    transition: all 0.3s ease;
+    transform: scale(1);
+}
+
+.heart-toggle:hover {
+    transform: scale(1.2);
+}
+
+.heart-toggle:active {
+    transform: scale(0.9);
+}
+
+/* ============================================
+   РЫНОК - ПРОГУЛКА
+   Все размеры управляются через JavaScript!
+   ============================================ */
+
+/* Контейнер режима прогулки */
+#walking-market {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+/* Контейнер панорамы */
+#new-market-view {
+    flex: 1;
+    overflow-x: auto;
+    overflow-y: hidden;
+    background: #1a202c;
+}
+
+/* Полоса рынка - размеры задаёт JS */
+#market-strip {
+    position: relative;
+    /* width, height, min-height управляются через JS */
+}
+
+/* Фоновые слои */
+.bg-layer {
+    position: absolute;
+    top: 0;
+    height: 100%;
+    background-size: 100% 100%;
+    background-repeat: no-repeat;
+}
+
+/* Контейнер товара - позиционирование через JS */
+.market-item-container {
+    position: absolute;
+    /* left, top, transform, z-index через JS */
+}
+
+/* Обёртка портрета продавца - размеры через JS */
+.seller-portrait-wrapper {
+    position: absolute;
+    pointer-events: none;
+    /* bottom, left, transform, z-index через JS */
+}
+/* Обёртка портрета продавца - размеры через JS */
+.seller-portrait-wrapper {
+    position: absolute;
+    pointer-events: none;
+    
+    /* ДОБАВИТЬ ЭТО: */
+    width: max-content !important;
+    display: flex;
+    justify-content: center;
+    
+    /* bottom, left, transform, z-index через JS */
+}
+
+/* Подпись имени продавца - размеры через JS */
+.seller-name-label {
+    position: absolute;
+    background: rgba(0,0,0,0.7);
+    color: white;
+    white-space: nowrap;
+    /* top, padding, border-radius, font-size через JS */
+}
+
+/* Кнопка товара - размеры через JS */
+.market-item-btn {
+    position: relative;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    /* margin-top, padding, background, border-radius, border через JS */
+}
+
+.market-item-btn:hover {
+    transform: scale(1.1) !important;
+    box-shadow: 0 0 20px rgba(255, 215, 0, 0.6) !important;
+}
+
+.market-item-btn:active {
+    transform: scale(0.95) !important;
+}
+
+/* Иконка товара - размеры через JS */
+.item-icon {
+    line-height: 1;
+    /* font-size через JS */
+}
+
+/* Подпись типа товара - размеры через JS */
+.item-type-label {
+    position: absolute;
+    left: 0;
+    right: 0;
+    text-align: center;
+    color: #666;
+    /* bottom, font-size через JS */
+}
+
+/* Пустой слот */
+.market-item-empty {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px dashed rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    opacity: 0.5;
+    /* left, top, transform, z-index через JS */
+}
+
+/* Иконка пустого слота - размеры через JS */
+.empty-slot-icon {
+    color: rgba(255,255,255,0.1);
+    line-height: 1;
+    /* font-size через JS */
+}
+
+/* Пульсация для новых товаров */
+.market-item-new .market-item-btn {
+    animation: marketPulse 2s infinite;
+}
+
+@keyframes marketPulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(255, 215, 0, 0.4); }
+    50% { box-shadow: 0 0 20px 10px rgba(255, 215, 0, 0.2); }
+}
+
+/* Кастомный скроллбар */
+#new-market-view::-webkit-scrollbar {
+    height: 10px;
+}
+
+#new-market-view::-webkit-scrollbar-track {
+    background: #2d3748;
+    border-radius: 5px;
+}
+
+#new-market-view::-webkit-scrollbar-thumb {
+    background: #4a5568;
+    border-radius: 5px;
+}
+
+#new-market-view::-webkit-scrollbar-thumb:hover {
+    background: #718096;
+}
+
+/* Подсказка при наведении (для режима тестера) */
+.market-item-tooltip {
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.9);
+    color: white;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 11px;
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s, visibility 0.2s;
+    pointer-events: none;
+    z-index: 100;
+}
+
+.market-item-btn:hover .market-item-tooltip {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* === АНИМАЦИИ === */
+@keyframes slideIn {
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes clueAppear {
+    from { opacity: 0; transform: translateX(-20px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes competitorAppear {
+    from { opacity: 0; transform: translateY(-5px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes modeSwitch {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+}
+
+.animate-slideIn { animation: slideIn 0.3s ease-out; }
+.competitor-new { animation: competitorAppear 0.3s ease-out; }
+.offer-item { animation: slideIn 0.3s ease-out; }
+.mode-notification { animation: modeSwitch 0.5s ease; }
+
+/* === АДАПТИВНОСТЬ === */
+@media (max-width: 768px) {
+    .card { 
+        transform: none !important; 
+    }
+    
+    .notification { 
+        left: 20px; 
+        right: 20px; 
+        max-width: none; 
+    }
+    
+    #haggleModal .bg-white {
+        margin: 10px;
+        padding: 16px;
+        max-height: calc(100vh - 20px);
+    }
+    
+    #haggleModal .text-xl { font-size: 1.1rem !important; }
+    #haggleModal .text-lg { font-size: 1rem !important; }
+    #haggleModal .text-sm { font-size: 0.8rem !important; }
+    #haggleModal .text-xs { font-size: 0.7rem !important; }
+    #haggleModal .text-6xl { font-size: 3rem !important; }
+    #haggleModal .text-4xl { font-size: 2rem !important; }
+}
+
+@media (max-width: 640px) {
+    #expertiseMethods {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    #expertiseMethods button {
+        min-height: 60px;
+        font-size: 0.7rem;
+    }
+}
+
+@media (max-width: 380px) {
+    .competitors-container {
+        max-height: 56px;
+    }
+    
+    .competitor-item {
+        font-size: 0.65rem;
+        padding: 2px 3px;
+    }
+    
+    .tactic-btn {
+        font-size: 9px;
+        padding: 6px 2px;
+        min-height: 45px;
+    }
+}
+
+/* === УТИЛИТЫ === */
+.text-shadow {
+    text-shadow: 2px 2px 0 #000;
+}
+
+.hidden {
+    display: none !important;
+}
+
+
+
+/* В режиме прогулки делаем кнопку-товар прозрачной, оставляем только эмодзи */
+.market-item-btn {
+    background: transparent !important;
+    border: none !important;
+    padding: 0 !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+}
+
+
+
+/* Специальные стили для квадрата рабочего стола */
+#expertiseModal .expertise-square-container {
+    aspect-ratio: 1 / 1;
+    width: 100%;
+    max-width: min(90vh, 90vw);
+    margin: 0 auto;
+}
+
+/* Адаптивные стили для разных устройств */
+@media (max-width: 768px) {
+    #expertiseModal {
+        padding: 0.5rem !important;
+    }
+    
+    #expertiseModal .max-w-6xl {
+        margin: 0.25rem !important;
+        padding: 0.75rem !important;
+        width: calc(100vw - 0.5rem);
+        max-width: none;
+    }
+    
+    /* На телефоне квадрат от края до края */
+    #expertiseModal .relative.w-full {
+        height: calc(100vw - 2rem) !important;
+        max-height: calc(100vw - 2rem) !important;
+        min-height: calc(100vw - 2rem) !important;
+    }
+    
+    /* Уменьшаем отступы методов исследования */
+    #expertiseMethods {
+        gap: 0.25rem;
+    }
+    
+    /* Меньшие шрифты на мобильных */
+    #expertiseModal h2, #expertiseModal h3 {
+        font-size: 0.9rem;
+    }
+}
+
+@media (min-width: 769px) {
+    /* На мониторе: квадрат с высотой 50% от высоты окна */
+    #expertiseModal .relative.w-full {
+        height: min(50vh, 600px) !important;
+        max-height: min(50vh, 600px) !important;
+        min-height: min(50vh, 400px) !important;
+        width: min(50vh, 600px) !important;
+        margin: 0 auto;
+    }
+    
+    /* Центрируем квадрат */
+    #expertiseModal .absolute.inset-0 {
+        left: 50%;
+        transform: translateX(-50%);
+        width: 100%;
+    }
+}
+
+/* Улучшение скролла для осколков */
+#shardsContainer {
+    scrollbar-width: thin;
+    scrollbar-color: #9CA3AF #F3F4F6;
+}
+
+#shardsContainer::-webkit-scrollbar {
+    width: 6px;
+}
+
+#shardsContainer::-webkit-scrollbar-track {
+    background: #F3F4F6;
+    border-radius: 3px;
+}
+
+#shardsContainer::-webkit-scrollbar-thumb {
+    background: #9CA3AF;
+    border-radius: 3px;
+}
+
+/* Анимация появления рабочего стола */
+@keyframes zoomIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+#expertiseTableImage {
+    animation: zoomIn 0.3s ease-out;
+}
+
+/* Темный фон для лучшей видимости изображения */
+.bg-gray-800 {
+    background: #1F2937;
+}
+
+.border-gray-900 {
+    border-color: #111827;
+}
+
+
+/* Стили для зон экспертизы */
+#expertiseZonesOverlay div,
+#zones-preview-overlay div {
+    transition: all 0.2s ease;
+}
+
+#expertiseZonesOverlay div:hover,
+#zones-preview-overlay div:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 12px rgba(255, 255, 255, 0.5) !important;
+}
+
+/* Стили для ползунков в конфигураторе */
+input[type="range"] {
+    -webkit-appearance: none;
+    appearance: none;
+    height: 6px;
+    border-radius: 3px;
+    outline: none;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #3B82F6;
+    cursor: pointer;
+    border: 2px solid white;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+input[type="range"]::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #3B82F6;
+    cursor: pointer;
+    border: 2px solid white;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+
+/* Анимации для PNG-наклеек */
+@keyframes scaleIn {
+    from {
+        transform: scale(2);
+        opacity: 0;
+    }
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+@keyframes fadeOut {
+    from {
+        opacity: 1;
+    }
+    to {
+        opacity: 0;
+    }
+}
+
+.method-visual-png {
+    animation: scaleIn 0.3s ease-out forwards;
+    filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.3));
+    transition: transform 0.2s ease, filter 0.2s ease;
+}
+
+.method-visual-png:hover {
+    transform: scale(1.1) !important;
+    filter: drop-shadow(4px 4px 6px rgba(0, 0, 0, 0.4));
+    cursor: pointer;
+}
+
+.method-visual-png.fade-out {
+    animation: fadeOut 0.3s ease-out forwards;
+}
+
+
+
+
+
+/* Стиль для бейджика "ОБРАЗЕЦ" */
+.sample-badge {
+    background: linear-gradient(135deg, #fbbf24 0%, #f97316 100%);
+    color: black;
+    font-weight: bold;
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 9999px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+/* Анимация для кнопки образца при нажатии */
+@keyframes sample-pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+.sample-button-active {
+    animation: sample-pulse 0.3s ease-in-out;
+}
+
+
+.golden-shards-section {
+    background: linear-gradient(135deg, #fef9e7 0%, #fcf3cf 100%);
+    border: 2px solid #f4d03f;
+    border-radius: 8px;
+    padding: 12px;
+    margin-top: 12px;
+}
+
+.golden-header {
+    font-weight: bold;
+    color: #b7950b;
+    margin-bottom: 8px;
+    font-size: 14px;
+}
+
+.golden-shard-item {
+    background: white;
+    border-radius: 4px;
+    padding: 8px;
+    margin-bottom: 6px;
+    border-left: 3px solid #f4d03f;
+    font-size: 13px;
+}
+
+.golden-shard-item:last-child {
+    margin-bottom: 0;
+}
+
+.golden-icon {
+    margin-right: 6px;
+}
+
+.golden-text {
+    color: #5d4e37;
+}
+
+
+
+/* ФИКСИРОВАННАЯ ВЫСОТА КАК В НАСТОЯЩЕЙ ИГРЕ */
+.game-container {
+    height: calc(100vh - 60px) !important; /* 100% экрана минус маленький отступ */
+    min-height: 500px;
+    display: flex;
+    flex-direction: column;
+}
+
+@media (max-height: 700px) {
+    .game-container {
+        height: calc(100vh - 40px) !important;
+        min-height: 400px;
+    }
+}
+
+/* СКРОЛЛ ВНУТРИ ВКЛАДОК */
+.tab-content-scroll {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+#notificationContainer {
+    flex-shrink: 0;
+}
+
+/* Основной контейнер с вкладками */
+.bg-white.rounded-lg.shadow-xl {
+    flex: 1;
+    margin-bottom: 0 !important; /* Убедитесь, что нет нижнего отступа */
+}
