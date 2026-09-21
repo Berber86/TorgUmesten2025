@@ -32,7 +32,7 @@
       tone: "even",
     },
     "Заинтересованные покупатели": {
-      art: ["interested-woman", "ordinary-man"],
+      art: ["interested-woman", "interested-man"],
       tone: "keen",
     },
     "Состоятельные покупатели": {
@@ -93,12 +93,12 @@
     const hint = `${comp.name} · ${comp.group || "покупатель"} · риск перехвата: ${threat.name}`;
     return `<figure class="rival" data-layout="${layout}" data-tone="${group.tone}"
       data-side="${side > 0 ? "right" : "left"}" data-threat="${threat.name}" aria-hidden="true"
-      style="--scale:${scale}; --sway:${sway}deg; --delay:${delay}s; --x:${side * 62}%;${extra}">
+      style="--scale:${scale}; --sway:${sway}deg; --delay:${delay}s;${extra}">
       <div class="rival-body">
         <span class="rival-shadow"></span>
         <img src="${ART}${artFor(comp)}.webp" alt="" draggable="false" title="${esc(hint)}">
       </div>
-      <figcaption class="rival-tag"><b>${esc(comp.name)}</b><i class="rival-dots">${dots(comp.coefficient)}</i></figcaption>
+      <figcaption class="rival-tag" title="${esc(hint)}"><b>${esc(comp.name)}</b><i class="rival-dots">${dots(comp.coefficient)}</i></figcaption>
     </figure>`;
   }
 
@@ -158,8 +158,8 @@
 
   // ------------------------------------------------------------ walking view
   /* Only a paused conversation knows who waits by the counter, so the panorama
-     draws rivals for lots with saved haggle state — and only from that data. */
-  /* Geometry is read from the inline styles market.js already writes, so the
+     draws rivals for lots with saved haggle state — and only from that data.
+     Geometry is read from the inline styles market.js already writes, so the
      layer is correct even while the walking view is still hidden. */
   function portraitMetrics(portrait, media) {
     const height = parseFloat(
@@ -168,17 +168,21 @@
     let size = height;
     if (!size) size = media.getBoundingClientRect().height;
     if (!size) size = portrait.getBoundingClientRect().height;
+    const style = media.getAttribute("style") || "";
+    const width = parseFloat((style.match(/width:\s*([\d.]+)px/) || [])[1]);
     const bottomOffset = parseFloat(
-      ((portrait.getAttribute("style") || "").match(/bottom:\s*(-?[\d.]+)px/) ||
-        [])[1],
+      ((portrait.getAttribute("style") || "").match(
+        /bottom:\s*(-?[\d.]+)px/,
+      ) || [])[1],
     );
     return {
       height: size,
-      // The seller portrait keeps its original baseline; the buyers' feet stand
-      // a little lower in the frame, so they read as closer to the viewer.
+      width: Number.isFinite(width) && width ? width : size * 0.6,
+      // The seller keeps his portrait baseline; the buyers' feet stand a little
+      // lower in the frame, so they read as nearer to the viewer.
       feet: Math.max(
         0,
-        (Number.isFinite(bottomOffset) ? bottomOffset : 20) - size * 0.08,
+        (Number.isFinite(bottomOffset) ? bottomOffset : 20) - size * 0.05,
       ),
     };
   }
@@ -197,9 +201,16 @@
       const portrait = container.querySelector(".seller-portrait-wrapper");
       const media = portrait && portrait.querySelector("img, video");
       if (!portrait || !media) return;
-      const { height: portraitHeight, feet } = portraitMetrics(portrait, media);
+      const {
+        height: portraitHeight,
+        width: portraitWidth,
+        feet,
+      } = portraitMetrics(portrait, media);
       if (!portraitHeight) return;
 
+      // A narrow panorama has no room for a wide pair: buyers stand closer to
+      // the seller, the way a queue actually forms at a small stall.
+      const narrow = view.clientWidth < 700;
       const ordered = [...competitors].sort(
         (a, b) => Number(b.coefficient) - Number(a.coefficient),
       );
@@ -211,15 +222,24 @@
       line.style.setProperty("--feet", `${Math.round(feet)}px`);
       line.style.setProperty("--figure-h", `${Math.round(portraitHeight)}px`);
       line.innerHTML = shown
-        .map((c, index) =>
-          figure(
+        .map((c, index) => {
+          // The greediest buyer stands closest to the viewer and a step nearer
+          // the counter than the second one.
+          const spread = narrow
+            ? index === 0
+              ? 0.24
+              : 0.32
+            : index === 0
+              ? 0.34
+              : 0.46;
+          const dx = Math.round(sidesHere[index] * portraitWidth * spread);
+          return figure(
             c,
             "hang",
             sidesHere[index],
-            // The greediest buyer stands closest to the viewer.
-            index === 0 ? "--depth:1.14;" : "--depth:0.95;",
-          ),
-        )
+            `--dx:${dx}px; --depth:${index === 0 ? "1.14" : "0.95"};`,
+          );
+        })
         .join("");
       portrait.after(line);
     });

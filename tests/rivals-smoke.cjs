@@ -1,11 +1,21 @@
 // Rival buyers: illustration must match the competitor data and change nothing.
 const assert = require("node:assert/strict");
-const Chromium = require("@sparticuz/chromium").default;
-const { chromium } = require("playwright");
+const { chromium } = require(process.env.PLAYWRIGHT_MODULE || "playwright");
 (async () => {
   const browser = await chromium.launch({
-    executablePath: await Chromium.executablePath(),
-    args: ["--no-sandbox", "--disable-dev-shm-usage", "--disable-gpu", "--single-process"],
+    headless: true,
+    ...(process.env.CHROMIUM_EXECUTABLE
+      ? {
+          executablePath: process.env.CHROMIUM_EXECUTABLE,
+          args: [
+            "--no-sandbox",
+            "--disable-dev-shm-usage",
+            "--no-zygote",
+            "--use-gl=angle",
+            "--use-angle=swiftshader",
+          ],
+        }
+      : {}),
   });
   const page = await browser.newPage({ viewport: { width: 1440, height: 1000 } });
   const errors = [];
@@ -36,6 +46,7 @@ const { chromium } = require("playwright");
   assert.equal(await stage.getAttribute("data-count"), "3");
   assert.equal(await page.locator(".rival-stage .rival").count(), 2);
   assert.equal(await page.locator(".rival-stage .rival-more").textContent(), "+1");
+
   // Tone and threat come from the stored group and coefficient, in game order.
   const drawn = await page.locator(".rival-stage .rival").evaluateAll((els) =>
     els.map((el) => [
@@ -56,7 +67,13 @@ const { chromium } = require("playwright");
   assert.match(drawn[0][3], /^assets\/rivals\/(safe-tramp|safe-tipsy)\.webp$/);
   assert.match(
     drawn[1][3],
-    /^assets\/rivals\/(interested-woman|ordinary-man)\.webp$/,
+    /^assets\/rivals\/(interested-woman|interested-man)\.webp$/,
+  );
+  assert.equal(
+    await page.evaluate(() =>
+      document.querySelector(".rival-stage .rival img").getAttribute("src"),
+    ),
+    drawn[0][3],
   );
   // Names on the paper tags match the competitor data, and the plain list is
   // still in the document for screen readers.
@@ -85,6 +102,7 @@ const { chromium } = require("playwright");
     "thrifty-student",
     "ordinary-man",
     "interested-woman",
+    "interested-man",
     "wealthy-man",
     "dangerous-antiquarian",
   ]) {
@@ -159,7 +177,7 @@ const { chromium } = require("playwright");
     switchTab("market");
     document.getElementById("compact-walk").click();
   }, built.id);
-  await page.waitForTimeout(1200);
+  await page.waitForTimeout(1500);
   const line = page.locator(".rival-line").first();
   assert(await line.count());
   assert.equal(await line.getAttribute("data-count"), "3");
@@ -169,8 +187,7 @@ const { chromium } = require("playwright");
     const container = el.closest(".market-item-container");
     const portrait = container.querySelector(".seller-portrait-wrapper");
     const card = container.querySelector(".market-item-btn");
-    const rival = el.querySelector(".rival");
-    const rivalBox = rival.getBoundingClientRect();
+    const rivalBox = el.querySelector(".rival").getBoundingClientRect();
     return {
       sellerBottom: portrait.getBoundingClientRect().bottom,
       rivalBottom: rivalBox.bottom,
