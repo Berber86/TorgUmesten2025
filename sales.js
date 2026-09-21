@@ -34,6 +34,7 @@ function renderSellModal() {
     
     document.getElementById('sellItemName').textContent = displayName;
     
+    // РЕЖИМ ИГРОКА: ПОКАЗЫВАЕМ ОЦЕНКУ ИГРОКА, А НЕ РЕАЛЬНУЮ СТОИМОСТЬ
     if (!gameState.isTesterMode) {
         document.getElementById('sellItemValue').textContent = formatMoney(item.estimatedValue || item.realValue);
     } else {
@@ -42,59 +43,69 @@ function renderSellModal() {
     
     const channels = [];
     
+    // Авито
     channels.push({
         id: 'avito',
         name: '📱 Авито',
         desc: 'Продажа через 15 дней. Ручная установка цены. Налог 1000р',
         html: `
-            <div class="channel-card" style="border-style:dashed">
-                <div class="channel-title">📱 Авито <span class="eyebrow small" style="margin-left:auto">15 дней • 50% звонок</span></div>
-                <div class="channel-desc">Налог: ${item.avitoRepost ? '1000₽' : 'БЕСПЛАТНО (первая)'}</div>
-                <div style="margin-top:10px">
-                    <label class="field-label">Твоя цена</label>
-                    <input type="number" id="avitoPrice" class="input" placeholder="₽" value="${item.estimatedValue || item.realValue}" style="margin-top:4px">
+            <div class="bg-blue-50 p-4 rounded-lg">
+                <h3 class="font-bold mb-2">📱 Авито</h3>
+                <div class="text-sm text-gray-600">15 дней, 50% шанс звонка в день</div>
+                <div class="text-sm text-gray-600">Налог: ${item.avitoRepost ? '1000р' : 'БЕСПЛАТНО (первая публикация)'}</div>
+                <div class="mt-2">
+                    <label class="block text-xs mb-1">Укажите цену продажи:</label>
+                    <input type="number" id="avitoPrice" class="w-full border rounded p-2" placeholder="Ваша цена" value="${item.estimatedValue || item.realValue}">
                 </div>
                 ${!item.authentic ? `
-                    <div style="margin-top:10px;background:#fff0ef;border:1px solid #ffbbb6;border-radius:10px;padding:8px">
-                        <label style="display:flex;gap:8px;align-items:center;font-size:12px;font-weight:700;color:#9a2a22">
-                            <input type="checkbox" id="sellAsFake" onclick="event.stopPropagation()">
-                            ⚠️ Выдать подделку за подлинник (×10, риск возврата)
+                    <div class="mt-2 bg-red-50 p-2 rounded border border-red-300">
+                        <label class="flex items-center text-sm">
+                            <input type="checkbox" id="sellAsFake" class="mr-2" onclick="event.stopPropagation()">
+                            <span class="text-red-700 font-bold">⚠️ Выдать подделку за подлинник (×10 к цене, риск возврата)</span>
                         </label>
                     </div>
                 ` : ''}
-                <button onclick="selectAvitoSale()" class="btn primary full" style="margin-top:12px">📱 Выставить на Авито</button>
+                <button onclick="selectAvitoSale()" class="w-full mt-3 bg-blue-500 hover:bg-blue-600 text-white py-2 rounded-lg font-semibold">
+                    📱 Выставить на Авито
+                </button>
             </div>
         `
     });
     
+    // Аукцион - ОБНОВЛЕННАЯ ЛОГИКА С СООБЩЕНИЕМ "НОУ" ДЛЯ ПОДДЕЛОК
     if (item.authentic) {
         channels.push({
             id: 'auction',
             name: '🔨 Аукцион',
             desc: '15 дней, стартовая ставка 5000р, комиссия 15%',
             html: `
-                <div class="channel-card" onclick="selectSellChannel('auction')">
-                    <div class="channel-title">🔨 Аукцион <span class="mono small" style="margin-left:auto;background:var(--paper-2);padding:4px 8px;border-radius:999px">старт 5 000₽</span></div>
-                    <div class="channel-desc">15 дней, авто-рост ставки. Стоимость выставления 1 000₽, комиссия 15%</div>
-                    <div class="channel-price mono">~ ${formatMoney(Math.max(5000, Math.round(item.realValue*0.8)))} → потолок</div>
+                <div class="bg-purple-50 p-4 rounded-lg cursor-pointer hover:bg-purple-100" onclick="selectSellChannel('auction')">
+                    <h3 class="font-bold">🔨 Аукцион</h3>
+                    <div class="text-sm text-gray-600">15 дней, автоматический рост ставки</div>
+                    <div class="text-sm text-gray-600">Стартовая ставка: 5,000р</div>
+                    <div class="text-sm text-orange-600">Стоимость выставления: 1,000р</div>
+                    <div class="text-sm text-orange-600">Комиссия аукционного дома: 15%</div>
                 </div>
             `
         });
     } else {
+        // ДЛЯ ПОДДЕЛОК - СООБЩЕНИЕ "НОУ"
         channels.push({
             id: 'auction',
             name: '🔨 Аукцион',
             desc: 'Только для подлинников',
             html: `
-                <div class="channel-card disabled">
-                    <div class="channel-title">🔨 Аукцион <span class="eyebrow small" style="margin-left:auto">недоступно</span></div>
-                    <div class="channel-desc">Аукцион не принимает подделки</div>
-                    <div class="mono" style="margin-top:8px;font-size:16px;font-weight:900">ноу</div>
+                <div class="bg-gray-100 p-4 rounded-lg cursor-not-allowed opacity-70">
+                    <h3 class="font-bold text-gray-500">🔨 Аукцион</h3>
+                    <div class="text-sm text-gray-500">15 дней, автоматический рост ставки</div>
+                    <div class="text-lg font-bold text-gray-500">ноу</div>
+                    <div class="text-xs text-gray-500 mt-1">Аукцион не принимает подделки</div>
                 </div>
             `
         });
     }
     
+    // Постоянные клиенты
     if (gameState.reputation >= 30 && skill >= 3) {
         const price = Math.round(item.realValue * (0.9 + Math.random() * 0.2));
         const days = 2 + Math.floor(Math.random() * 4);
@@ -103,37 +114,43 @@ function renderSellModal() {
             name: '👤 Постоянный клиент',
             desc: `90-110% от реальной цены, ${days} дней`,
             html: `
-                <div class="channel-card" onclick="selectSellChannel('regular', ${price})">
-                    <div class="channel-title">👤 Постоянный клиент <span class="eyebrow small" style="margin-left:auto">${days} дн</span></div>
-                    <div class="channel-desc">Встреча через ${days} дня, честная цена</div>
-                    <div class="channel-price mono">${formatMoney(price)}</div>
+                <div class="bg-green-50 p-4 rounded-lg cursor-pointer hover:bg-green-100" onclick="selectSellChannel('regular', ${price})">
+                    <h3 class="font-bold">👤 Постоянный клиент</h3>
+                    <div class="text-sm text-gray-600">Встреча через ${days} дня</div>
+                    <div class="text-lg font-bold text-green-600">${formatMoney(price)}</div>
                 </div>
             `
         });
     }
     
+    // Комиссионка - ОБНОВЛЕННАЯ ЛОГИКА
     const commissionPrice = Math.round(item.realValue * (0.2 + Math.random() * 0.1));
     
+    // ДЕТЕРМИНИРОВАННОЕ РЕШЕНИЕ КОМИССИОНКИ ДЛЯ ЭТОГО ТОВАРА
     if (!item.hasOwnProperty('commissionDecision')) {
+        // Генерируем решение один раз и навсегда для этого предмета
         const hash = item.id.split('_').reduce((sum, part) => sum + part.charCodeAt(0), 0);
-        item.commissionDecision = (hash % 2) === 0;
+        item.commissionDecision = (hash % 2) === 0; // 50% шанс
     }
     
     let commissionHTML = '';
     if (item.commissionDecision) {
+        // КОМИССИОНКА СОГЛАСНА КУПИТЬ
         commissionHTML = `
-            <div class="channel-card" onclick="selectSellChannel('commission', ${commissionPrice})">
-                <div class="channel-title">🏪 Комиссионка <span class="eyebrow small" style="margin-left:auto">мгновенно</span></div>
-                <div class="channel-desc">20-30% от реальной цены, без ожиданий</div>
-                <div class="channel-price mono">${formatMoney(commissionPrice)}</div>
+            <div class="bg-orange-50 p-4 rounded-lg cursor-pointer hover:bg-orange-100" onclick="selectSellChannel('commission', ${commissionPrice})">
+                <h3 class="font-bold">🏪 Комиссионка</h3>
+                <div class="text-sm text-gray-600">Мгновенная продажа</div>
+                <div class="text-lg font-bold text-orange-600">${formatMoney(commissionPrice)}</div>
             </div>
         `;
     } else {
+        // КОМИССИОНКА ОТКАЗЫВАЕТСЯ
         commissionHTML = `
-            <div class="channel-card disabled">
-                <div class="channel-title">🏪 Комиссионка</div>
-                <div class="channel-desc">Комиссионка не заинтересована в этом товаре</div>
-                <div class="mono" style="margin-top:8px">Это нам не надо</div>
+            <div class="bg-gray-100 p-4 rounded-lg cursor-not-allowed opacity-70">
+                <h3 class="font-bold text-gray-500">🏪 Комиссионка</h3>
+                <div class="text-sm text-gray-500">Мгновенная продажа</div>
+                <div class="text-lg font-bold text-gray-500">Это нам не надо</div>
+                <div class="text-xs text-gray-500 mt-1">Комиссионка не заинтересована в этом товаре</div>
             </div>
         `;
     }
@@ -347,62 +364,56 @@ function renderSellModal() {
     container.innerHTML = gameState.sellingItems.map(sale => {
         const skill = gameState.skills[sale.category] || 0;
         const displayName = getDisplayName(sale, skill);
-        const icon = DETAILED_ICONS[sale.baseName] || CATEGORY_ICONS[sale.category] || '◫';
         
         let statusHTML = '';
         if (sale.channel === 'avito') {
             statusHTML = `
-                <div class="sale-channel mono" style="background:#e0f0ff;color:#2a3a9a">📱 Авито • ${sale.daysLeft}/${sale.totalDays} дн • ${formatMoney(sale.playerPrice)}</div>
-                <div style="margin-top:10px">
+                <div class="bg-blue-50 p-3 rounded">
+                    <div class="font-bold">📱 Авито - День ${sale.daysLeft}/${sale.totalDays}</div>
+                    <div class="text-sm">Цена: ${formatMoney(sale.playerPrice)}</div>
                     ${sale.offers && sale.offers.length > 0 ? `
-                        <div class="stack" style="gap:8px">
+                        <div class="mt-2 space-y-2">
                             ${sale.offers.map((offer, idx) => `
-                                <div class="channel-card" style="padding:10px">
-                                    <div class="small">💬 ${formatMoney(offer.price)} <span class="muted">(${offer.percent}%)</span></div>
-                                    <div class="row gap" style="margin-top:8px">
-                                        <button onclick="acceptAvitoOffer('${sale.id}', ${idx})" class="btn small primary" style="flex:1">Принять</button>
-                                        <button onclick="rejectAvitoOffer('${sale.id}', ${idx})" class="btn small ghost" style="flex:1">Отказ</button>
+                                <div class="bg-white p-2 rounded border offer-item">
+                                    <div class="text-sm">💬 Предложение: ${formatMoney(offer.price)} (${offer.percent}%)</div>
+                                    <div class="flex gap-2 mt-1">
+                                        <button onclick="acceptAvitoOffer('${sale.id}', ${idx})" class="flex-1 bg-green-500 text-white py-1 px-2 rounded text-xs">✅ Принять</button>
+                                        <button onclick="rejectAvitoOffer('${sale.id}', ${idx})" class="flex-1 bg-red-500 text-white py-1 px-2 rounded text-xs">❌ Отказать</button>
                                     </div>
                                 </div>
                             `).join('')}
                         </div>
-                    ` : '<div class="muted small" style="margin-top:8px">Ожидание звонков...</div>'}
-                    <button onclick="removeFromSale('${sale.id}')" class="btn small ghost" style="width:100%;margin-top:10px">🗑️ Снять с продажи</button>
+                    ` : '<div class="text-sm text-gray-500 mt-2">Ожидание звонков...</div>'}
+                    <button onclick="removeFromSale('${sale.id}')" class="w-full mt-2 bg-gray-500 text-white py-1 rounded text-sm">🗑️ Снять с продажи</button>
                 </div>
             `;
         } else if (sale.channel === 'auction') {
+            // ОТОБРАЖЕНИЕ "НЕТ СТАВОК" ДЛЯ ЦЕНЫ 5000
             const currentBidDisplay = sale.currentBid === 5000 ? "нет ставок" : formatMoney(sale.currentBid);
-            const isNoBid = sale.currentBid === 5000;
+            
             statusHTML = `
-                <div class="sale-channel mono" style="background:#f3e8ff;color:#5b2a9a">🔨 Аукцион • ${sale.daysLeft}/${sale.totalDays} дн</div>
-                <div style="margin-top:10px">
-                    <div class="small muted">Старт: ${formatMoney(sale.startBid)}</div>
-                    <div class="mono" style="font-size:16px;font-weight:900;margin-top:4px;${isNoBid ? 'color:var(--ink-muted)' : 'color:var(--accent-3)'}">${isNoBid ? '❌ нет ставок' : currentBidDisplay}</div>
-                    <div class="small muted" style="margin-top:4px">Комиссия 15% при продаже</div>
+                <div class="bg-purple-50 p-3 rounded">
+                    <div class="font-bold">🔨 Аукцион - День ${sale.daysLeft}/${sale.totalDays}</div>
+                    <div class="text-sm">Стартовая ставка: ${formatMoney(sale.startBid)}</div>
+                    <div class="text-lg font-bold ${sale.currentBid === 5000 ? 'text-gray-600' : 'text-green-600'}">
+                        ${sale.currentBid === 5000 ? '❌ Текущая: нет ставок' : `Текущая: ${formatMoney(sale.currentBid)}`}
+                    </div>
+                    <div class="text-xs text-gray-500 mt-1">Комиссия 15% при продаже</div>
                 </div>
             `;
         } else if (sale.channel === 'regular') {
             statusHTML = `
-                <div class="sale-channel mono" style="background:#e6f5e6;color:#2f6a2f">👤 Постоянный клиент • ${sale.daysLeft}/${sale.totalDays} дн</div>
-                <div style="margin-top:10px">
-                    <div class="mono" style="font-size:16px;font-weight:900">${formatMoney(sale.salePrice)}</div>
-                    <div class="small muted">Встреча назначена</div>
+                <div class="bg-green-50 p-3 rounded">
+                    <div class="font-bold">👤 Постоянный клиент - День ${sale.daysLeft}/${sale.totalDays}</div>
+                    <div class="text-lg font-bold text-green-600">Цена: ${formatMoney(sale.salePrice)}</div>
+                    <div class="text-xs text-gray-500 mt-1">Встреча назначена</div>
                 </div>
             `;
         }
 
-        return `<div class="sale-card">
-            <div class="sale-head">
-                <div style="display:flex;gap:10px;align-items:center">
-                    <div style="font-size:22px">${icon}</div>
-                    <div class="sale-title">${displayName}</div>
-                </div>
-            </div>
-            <div style="margin-top:12px">${statusHTML}</div>
-        </div>`;
+        return `<div class="bg-white p-4 rounded-lg shadow">${displayName}${statusHTML}</div>`;
     }).join('');
 }
-
 
 function processSales() {
     const toRemove = [];

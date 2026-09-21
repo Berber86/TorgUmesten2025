@@ -35,38 +35,39 @@ function renderRestorationModal() {
 
     const analysis = performDetailedDamageAnalysis(item);
     
+    // Используем исправленную оцененную стоимость
     const currentValue = item.estimatedValue || item.realValue || 1000;
     const totalSeverityPercent = Math.round((analysis.totalSeverity || 0) * 100);
     const restorationPotentialPercent = Math.round((analysis.restorationPotential || 0) * 100);
 
     let content = `
-        <div style="display:flex;flex-direction:column;gap:16px">
-            <div class="row between" style="align-items:flex-start">
+        <div class="mb-6">
+            <div class="flex justify-between items-start mb-4">
                 <div>
-                    <div class="eyebrow small">${CATEGORY_ICONS[item.category]} ${item.category}</div>
-                    <div class="h3" style="margin-top:4px">${displayName}</div>
+                    <h3 class="font-bold text-lg">${displayName}</h3>
+                    <p class="text-sm text-gray-600">${CATEGORY_ICONS[item.category]} ${item.category}</p>
                 </div>
-                <div style="text-align:right">
-                    <div class="mono" style="font-size:18px;font-weight:900;color:var(--accent-3)">${formatMoney(currentValue)}</div>
-                    <div class="small muted">текущая оценка</div>
-                    <div class="small" style="color:#5b6abf">реальная: ${formatMoney(item.realValue)}</div>
-                </div>
-            </div>
-            
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-                <div class="stat-card" style="background:var(--paper-2)">
-                    <div class="stat-label">Повреждения</div>
-                    <div class="stat-num mono" style="color:#d45d2a">${totalSeverityPercent}%</div>
-                </div>
-                <div class="stat-card" style="background:var(--paper-2)">
-                    <div class="stat-label">Потенциал</div>
-                    <div class="stat-num mono" style="color:var(--accent-3)">${restorationPotentialPercent}%</div>
+                <div class="text-right">
+                    <div class="text-lg font-bold text-green-600">${formatMoney(currentValue)}</div>
+                    <div class="text-sm text-gray-500">текущая оценка</div>
+                    <div class="text-xs text-blue-600">реальная: ${formatMoney(item.realValue)}</div>
                 </div>
             </div>
             
-            <div>
-                <div class="eyebrow small" style="margin-bottom:8px">ДЕФЕКТЫ И ПРОГРЕСС</div>
-                <div class="stack" style="gap:10px">
+            <div class="grid grid-cols-2 gap-4 mb-4">
+                <div class="text-center p-3 bg-blue-50 rounded">
+                    <div class="text-2xl font-bold text-blue-600">${totalSeverityPercent}%</div>
+                    <div class="text-sm">Степень повреждений</div>
+                </div>
+                <div class="text-center p-3 bg-green-50 rounded">
+                    <div class="text-2xl font-bold text-green-600">${restorationPotentialPercent}%</div>
+                    <div class="text-sm">Потенциал восстановления</div>
+                </div>
+            </div>
+            
+            <div class="mb-4">
+                <h4 class="font-semibold mb-2">🔍 Дефекты и прогресс реставрации:</h4>
+                <div class="space-y-3">
     `;
 
     if (item.defects && item.defects.length > 0) {
@@ -93,41 +94,48 @@ function renderRestorationModal() {
                 "critical": "🔴"
             };
             
+            // Расчет текущего влияния на стоимость
             const currentSeverity = baseSeverity * (1 - (progress / 100));
             const currentSeverityPercent = Math.round(currentSeverity * 100);
             const valueImpact = Math.round((item.realValue || 1000) * baseSeverity * (progress / 100));
             
             content += `
-                <div class="restoration-defect">
-                    <div class="row between" style="margin-bottom:6px">
-                        <span style="font-weight:700;font-size:13px">${difficultyIcons[difficulty]} ${defect}</span>
-                        <span class="eyebrow small" style="background:var(--paper-2);padding:3px 8px;border-radius:999px;border:1px solid var(--line)">${difficulty.toUpperCase()}</span>
+                <div class="text-sm border-l-4 ${difficultyColors[difficulty]} pl-3 bg-gray-50 rounded-r p-2">
+                    <div class="flex justify-between items-center mb-1">
+                        <span class="font-semibold">${difficultyIcons[difficulty]} ${defect}</span>
+                        <span class="text-xs px-2 py-1 rounded ${difficultyColors[difficulty]} bg-white border">
+                            ${difficulty.toUpperCase()}
+                        </span>
                     </div>
-                    <div class="row between small muted" style="margin-bottom:6px">
+                    <div class="flex justify-between text-xs text-gray-600 mb-1">
                         <span>Прогресс: ${progress}%</span>
-                        <span>Штраф: -${severityPercent}%</span>
+                        <span>Исходный штраф: -${severityPercent}%</span>
                     </div>
-                    <div class="progress-track" style="height:8px"><div class="progress-fill" style="width:${progress}%;background:var(--accent-3)"></div></div>
-                    <div class="small muted" style="margin-top:6px">
-                        Сейчас: -${currentSeverityPercent}% • Восстановлено: +${formatMoney(valueImpact)}
-                        ${progress >= 100 ? ' • ✅ готово' : ''}
+                    <div class="w-full bg-gray-200 rounded-full h-3 mb-1">
+                        <div class="bg-green-500 h-3 rounded-full transition-all" 
+                             style="width: ${progress}%"></div>
+                    </div>
+                    <div class="text-xs text-gray-500">
+                        Текущее влияние: -${currentSeverityPercent}% • Восстановлено: +${formatMoney(valueImpact)}
+                        ${progress >= 100 ? '✅ Полностью устранен' : ''}
                     </div>
                 </div>
             `;
         });
     } else {
-        content += `<div class="muted small">Дефектов не обнаружено</div>`;
+        content += `<div class="text-sm text-gray-500">Дефектов не обнаружено</div>`;
     }
 
     content += `
                 </div>
             </div>
             
-            <div>
-                <div class="eyebrow small" style="margin-bottom:10px">ВАРИАНТЫ РЕСТАВРАЦИИ</div>
-                <div class="stack" style="gap:12px">
+            <div class="border-t pt-4">
+                <h4 class="font-semibold mb-3">🛠️ Варианты реставрации</h4>
+                <div class="space-y-3">
     `;
 
+    // Самостоятельная реставрация
     const selfMethods = findAllRestorationMethods().filter(method => 
         skill >= method.skillReq && 
         method.fixes.some(fix => 
@@ -139,9 +147,9 @@ function renderRestorationModal() {
     
     if (selfMethods.length > 0) {
         content += `
-            <div>
-                <div class="small" style="font-weight:800;margin-bottom:8px">🎓 Самостоятельно</div>
-                <div class="stack" style="gap:8px">
+            <div class="p-3 bg-purple-50 rounded-lg">
+                <h5 class="font-semibold mb-2">🎓 Самостоятельная реставрация</h5>
+                <div class="space-y-2">
         `;
         selfMethods.forEach(method => {
             const attemptCount = item.restorationAttempts || 0;
@@ -149,38 +157,47 @@ function renderRestorationModal() {
             const actualCost = Math.round((method.cost || 100) * costMultiplier);
             
             content += `
-                <button onclick="attemptAdvancedRestoration('${item.id}', '${method.id}')" class="restoration-option" style="text-align:left;width:100%;cursor:pointer">
-                    <div>
-                        <div style="font-weight:700;font-size:13px">${method.name}</div>
-                        <div class="small muted">Риск ${Math.round((method.risk || 0.2) * 100)}% • Ур ${method.skillReq || 1}${attemptCount>0 ? ` • Попыток ${attemptCount} (-${Math.round((1-costMultiplier)*100)}%)` : ''}</div>
+                <button onclick="attemptAdvancedRestoration('${item.id}', '${method.id}')" 
+                    class="w-full text-left p-2 bg-white rounded border hover:bg-purple-100 transition">
+                    <div class="flex justify-between items-center">
+                        <span class="font-semibold">${method.name}</span>
+                        <span class="text-green-600 font-bold">${formatMoney(actualCost)}</span>
                     </div>
-                    <div class="mono" style="font-weight:900;color:var(--accent-3)">${formatMoney(actualCost)}</div>
+                    <div class="flex justify-between text-sm text-gray-600">
+                        <span>Риск: ${Math.round((method.risk || 0.2) * 100)}%</span>
+                        <span>Уровень: ${method.skillReq || 1}</span>
+                    </div>
+                    ${attemptCount > 0 ? `<div class="text-xs text-gray-500 mt-1">Попыток: ${attemptCount} (скидка ${Math.round((1 - costMultiplier) * 100)}%)</div>` : ''}
                 </button>
             `;
         });
         content += `</div></div>`;
     }
     
+    // Профессиональная реставрация
     Object.entries(professionalStudios).forEach(([level, studio]) => {
         if (studio.specialties.includes(getItemSpecialty(item))) {
             const cost = calculateStudioCost(studio, item, analysis);
             content += `
-                <div class="channel-card">
-                    <div class="row between" style="align-items:flex-start">
+                <div class="p-3 bg-blue-50 rounded-lg">
+                    <div class="flex justify-between items-start mb-2">
                         <div>
-                            <div style="font-weight:800;font-size:14px">${studio.name}</div>
-                            <div class="small muted" style="margin-top:2px">${studio.description}</div>
+                            <h5 class="font-semibold">${studio.name}</h5>
+                            <p class="text-sm text-gray-600">${studio.description}</p>
                         </div>
-                        <div style="text-align:right">
-                            <div class="mono" style="font-weight:900">${formatMoney(cost)}</div>
-                            <div class="small" style="color:var(--accent-3)">Успех ${Math.round((studio.successRate || 0.85) * 100)}%</div>
+                        <div class="text-right">
+                            <div class="font-bold text-lg">${formatMoney(cost)}</div>
+                            <div class="text-sm text-green-600">Успех: ${Math.round((studio.successRate || 0.85) * 100)}%</div>
                         </div>
                     </div>
-                    <div class="row between small muted" style="margin-top:8px">
-                        <span>⏱️ ${studio.timeRequired || 3} дн</span>
+                    <div class="flex justify-between text-sm text-gray-600 mb-2">
+                        <span>⏱️ ${studio.timeRequired || 3} дней</span>
                         <span>🛠️ ${(studio.specialties || []).join(', ')}</span>
                     </div>
-                    <button onclick="startProfessionalRestoration('${item.id}', '${level}')" class="btn primary small full" style="margin-top:10px">Заказать реставрацию</button>
+                    <button onclick="startProfessionalRestoration('${item.id}', '${level}')" 
+                        class="w-full py-2 bg-blue-500 hover:bg-blue-600 text-white rounded transition">
+                        Заказать реставрацию
+                    </button>
                 </div>
             `;
         }
@@ -190,4 +207,3 @@ function renderRestorationModal() {
 
     document.getElementById('restorationContent').innerHTML = content;
 }
-

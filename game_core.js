@@ -1,6 +1,6 @@
         function nextDay() {
           // Получаем кнопку (с защитой от ошибок)
-          const button = (event && event.target) ? event.target : document.getElementById('nextDayBtn');
+          const button = document.getElementById('nextDayBtn');
           
           // =======================================================
           // 1. ЛОГИКА ВЫЖИВАНИЯ (ПРОВЕРКА ДЕНЕГ ПЕРЕД СПИСАНИЕМ)
@@ -114,7 +114,7 @@
             // Разблокируем кнопку
             if (button) {
               button.disabled = false;
-              button.textContent = '⏭️ Следующий день (-500р)';
+              button.innerHTML = 'Следующий день <span>↗</span><small>Аренда: 500 ₽</small>';
             }
           }, 100);
         }
