@@ -42,11 +42,11 @@
     if (/ложк|вилк|столовый набор|столовых приборов/i.test(name))
       return "assets/object-cutlery.jpg";
     if (/самовар/i.test(name)) return "assets/object-samovar.jpg";
-    if (/чай|чаш|подстаканник/i.test(name)) return "assets/object-teacup.jpg";
+    if (/чай|чаш|подстаканник/i.test(name)) return "assets/street-cup.webp";
     if (/клинок|штык|кортик|сабл|шпаг|нож|палаш|шашк/i.test(name))
       return "assets/object-dagger.jpg";
-    if (item.category === "painting") return "assets/category-painting.jpg";
-    if (item.category === "books") return "assets/category-books.jpg";
+    if (item.category === "painting") return "assets/street-painting.webp";
+    if (item.category === "books") return "assets/street-books.webp";
     if (/ваз[аы]|кувшин/i.test(name)) return "assets/category-porcelain.jpg";
     if (/часы|часов/i.test(name)) return "assets/category-metal.jpg";
     if (/орден|медаль|кокард|эполет|награ|знак/i.test(name))
@@ -68,7 +68,7 @@
       namedIcon ||
       DETAILED_ICONS[item.baseName] ||
       CATEGORY_ICONS[item.category];
-    return `<span class="object-drawing drawing-${item.category}" role="img" aria-label="Условная иллюстрация: ${escape(item.baseName)}"><span class="drawing-orbit"></span><span class="drawing-glyph">${escape(icon)}</span><span class="drawing-mark">КАТАЛОГ РЕДКОСТЕЙ / ${category(item)}</span></span>`;
+    return `<span class="object-drawing drawing-${item.category}" role="img" aria-label="Условная иллюстрация: ${escape(item.baseName)}"><span class="drawing-orbit"></span><span class="drawing-glyph">${escape(icon)}</span><span class="drawing-mark">ОПИСЬ ВЕЩЕЙ / ${category(item)}</span></span>`;
   }
   const readPreference = (key, fallback) => {
     try {
@@ -142,14 +142,14 @@
   const briefing = document.createElement("div");
   briefing.className = "day-briefing";
   briefing.innerHTML =
-    '<span class="briefing-dot"></span><strong>Сегодня на рынке</strong><span id="briefing-text"></span><button id="briefing-inventory">К моей коллекции ' +
+    '<span class="briefing-dot"></span><strong>Сегодня на рынке</strong><span id="briefing-text"></span><button id="briefing-inventory">К моим вещам ' +
     svg("arrow") +
     "</button>";
   document.querySelector(".market-hero").after(briefing);
   $("briefing-inventory").onclick = () => switchTab("inventory");
-  document.querySelector(".hero-label").textContent = "БЮРО РЕДКИХ НАХОДОК";
+  document.querySelector(".hero-label").textContent = "ОСЕНЬ / ПЕТЕРБУРГ";
   document.querySelector(".hero-copy p").innerHTML =
-    "Красота — в деталях.<br>Выгода — в умении их замечать.";
+    "Здесь можно подняться.<br>А можно отдать последние за хлам.";
   document.querySelector(".market-search>span").innerHTML = svg("search");
   const shortcut = document.createElement("kbd");
   shortcut.textContent = "/";
@@ -477,7 +477,7 @@
       card.classList.add("discipline-card");
       const cover = document.createElement("div");
       cover.className = "discipline-cover";
-      cover.innerHTML = `<img src="assets/category-${key}.jpg" alt="${marketCategoryNames[key]} — иллюстрация категории" loading="lazy"><span>ДИСЦИПЛИНА ${String(index + 1).padStart(2, "0")}</span>`;
+      cover.innerHTML = `<img src="${key === "books" ? "assets/street-books.webp" : key === "painting" ? "assets/street-painting.webp" : "assets/category-" + key + ".jpg"}" alt="${marketCategoryNames[key]} — иллюстрация категории" loading="lazy"><span>ДИСЦИПЛИНА ${String(index + 1).padStart(2, "0")}</span>`;
       card.prepend(cover);
       const action = document.createElement("button");
       action.className = "discipline-action";
@@ -527,7 +527,7 @@
     });
     if (!sales.length) {
       $("emptySelling").innerHTML =
-        `<div class="empty-collection-art">${svg("selling")}</div><h3>Хорошая находка ищет нового владельца.</h3><p>После экспертизы откройте вещь в коллекции и выберите способ продажи.</p><button class="ux-primary" id="selling-to-collection">Перейти в коллекцию ${svg("arrow")}</button>`;
+        `<div class="empty-collection-art">${svg("selling")}</div><h3>Пока никто не платит.</h3><p>После экспертизы откройте вещь в коллекции и выберите способ продажи.</p><button class="ux-primary" id="selling-to-collection">Перейти в коллекцию ${svg("arrow")}</button>`;
       $("selling-to-collection").onclick = () => switchTab("inventory");
     }
   };

@@ -99,22 +99,22 @@
   const studio = document.createElement("section");
   studio.id = "content-atelier";
   studio.className = "hidden";
-  studio.innerHTML = `<div class="studio-masthead"><div><div class="eyebrow">ЛИЧНОЕ ДЕЛО / КАБИНЕТ КОЛЛЕКЦИОНЕРА</div><h1>Лавка «<span id="shop-name"></span>»<span class="studio-dot">.</span></h1><p>Здесь случайные находки становятся вашей историей.</p></div><button id="rename-shop" class="studio-edit">${icon("pen")} Название лавки</button></div>
-  <div class="studio-top"><div class="studio-scene"><img src="assets/atelier-room.jpg" alt="Атмосферная иллюстрация антикварной лавки: рабочий стол и полки в солнечном свете"><div class="scene-grain"></div><div class="scene-heading"><span class="scene-open"><i></i> ДЕЛО ОТКРЫТО</span><h2>У вещей есть прошлое.<br><em>У вас — планы.</em></h2></div><button class="scene-hotspot hotspot-market" data-studio-tab="market"><span>01</span><div><strong>На барахолку</strong><small>Новые истории ждут</small></div>${svg("arrow")}</button><button class="scene-hotspot hotspot-notes" data-journal><span>02</span><div><strong>Полевой дневник</strong><small>То, что стоит запомнить</small></div>${svg("arrow")}</button><div class="scene-caption"><span>КАБИНЕТ ВООБРАЖЕНИЯ</span><span>Атмосферная иллюстрация</span></div></div>
-  <aside class="studio-agenda"><div class="agenda-head"><span class="eyebrow">НА ОЧЕРЕДИ</span><span id="studio-day"></span></div><h2>Хороший день<br>для хорошей сделки.</h2><div id="studio-actions"></div><div class="agenda-foot">${icon("sun")} Без спешки. Но находки не ждут.</div></aside></div>
-  <div class="studio-bottom"><section class="studio-shelf"><header><div><span class="eyebrow">ЛИЧНОЕ СОБРАНИЕ</span><h2>С полки коллекционера</h2></div><button data-studio-tab="inventory">Вся коллекция ${svg("arrow")}</button></header><div id="studio-shelf-items"></div></section><section class="studio-goals"><span class="eyebrow">ДЕЛО РАСТЁТ</span><h2>От первой находки<br>к большому имени.</h2><div id="studio-goal-metrics"></div><button data-studio-tab="stats">Посмотреть результаты ${svg("arrow")}</button></section></div>
-  <section class="studio-notebook-banner"><div class="notebook-seal">${icon("notebook")}</div><div><span class="eyebrow">ПАМЯТЬ КОЛЛЕКЦИОНЕРА</span><h3>Хорошее чутьё начинается с наблюдений.</h3><p>Записывайте мысли о вещах. Сравнивайте предложения. Доверяйте фактам.</p></div><button data-journal>Открыть дневник ${svg("arrow")}</button></section>`;
+  studio.innerHTML = `<div class="studio-masthead"><div><div class="eyebrow">ПЕТЕРБУРГ / ПЕРЕД ВЫХОДОМ</div><h1>Точка «<span id="shop-name"></span>»<span class="studio-dot">.</span></h1><p>За окном сыро. За комнату снова платить.</p></div><button id="rename-shop" class="studio-edit">${icon("pen")} Название точки</button></div>
+  <div class="studio-top"><div class="studio-scene"><img src="assets/rented-room.webp" alt="Атмосферная иллюстрация: съёмная комната, дешёвый стол и окно в мокрый петербургский двор"><div class="scene-grain"></div><div class="scene-heading"><span class="scene-open"><i></i> СЪЁМНЫЙ УГОЛ / ПЕРЕД ВЫХОДОМ</span><h2>Свести концы.<br><em>И снова на рынок.</em></h2></div><button class="scene-hotspot hotspot-market" data-studio-tab="market"><span>01</span><div><strong>На барахолку</strong><small>Пока не разобрали</small></div>${svg("arrow")}</button><button class="scene-hotspot hotspot-notes" data-journal><span>02</span><div><strong>Записная книжка</strong><small>Цены. Продавцы. Зацепки.</small></div>${svg("arrow")}</button><div class="scene-caption"><span>ЗА ОКНОМ СНОВА ДОЖДЬ</span><span>Иллюстрация · не уровень жилья</span></div></div>
+  <aside class="studio-agenda"><div class="agenda-head"><span class="eyebrow">НА ОЧЕРЕДИ</span><span id="studio-day"></span></div><h2>Сначала —<br>на аренду.</h2><div id="studio-rent" class="rent-check" role="status"></div><div id="studio-actions"></div><div class="agenda-foot">${icon("sun")} Новый день стоит 500 ₽. Даже без продаж.</div></aside></div>
+  <div class="studio-bottom"><section class="studio-shelf"><header><div><span class="eyebrow">ЧТО УДАЛОСЬ ДОСТАТЬ</span><h2>Вещи на руках</h2></div><button data-studio-tab="inventory">Все вещи ${svg("arrow")}</button></header><div id="studio-shelf-items"></div></section><section class="studio-goals"><span class="eyebrow">ВЫБРАТЬСЯ В ПЛЮС</span><h2>Не остаться<br>у разбитого корыта.</h2><div id="studio-goal-metrics"></div><button data-studio-tab="stats">Посмотреть результаты ${svg("arrow")}</button></section></div>
+  <section class="studio-notebook-banner"><div class="notebook-seal">${icon("notebook")}</div><div><span class="eyebrow">ЗАПИСАНО НА ПОЛЯХ</span><h3>Кто сколько просил. Кто что скрыл.</h3><p>Записывайте цены и подозрения. На память здесь лучше не полагаться.</p></div><button data-journal>Открыть дневник ${svg("arrow")}</button></section>`;
   $("game-shell").insertBefore(studio, document.querySelector(".game-footer"));
   const navButton = document.createElement("button");
   navButton.id = "tab-atelier";
   navButton.className = "px-6 py-3 font-semibold";
-  navButton.innerHTML = `<span class="nav-icon">${icon("home")}</span><span>Моя лавка</span><span class="nav-arrow">↗</span>`;
+  navButton.innerHTML = `<span class="nav-icon">${icon("home")}</span><span>Моя точка</span><span class="nav-arrow">↗</span>`;
   navButton.onclick = () => switchTab("atelier");
   document.querySelector(".main-navigation").prepend(navButton);
   const dock = document.querySelector(".mobile-dock");
   const dockHome = document.createElement("button");
   dockHome.dataset.nav = "atelier";
-  dockHome.innerHTML = icon("home") + "<span>Лавка</span>";
+  dockHome.innerHTML = icon("home") + "<span>Точка</span>";
   dock.prepend(dockHome);
   // Keep the mobile dock at six items; Help remains accessible in the header/palette.
   dock.querySelector('[data-nav="help"]').remove();
@@ -145,7 +145,7 @@
       });
       navButton.classList.add("tab-active");
       navButton.setAttribute("aria-current", "page");
-      $("page-label").textContent = "Моя лавка";
+      $("page-label").textContent = "Моя точка";
       renderStudio();
     } else previousSwitch(next);
     tab = next;
@@ -192,13 +192,16 @@
     $("shop-name").textContent = name;
     $("studio-day").textContent =
       "ДЕНЬ " + String(gameState.day).padStart(2, "0");
+    const rent = $("studio-rent");
+    rent.dataset.short = String(gameState.money < 500);
+    rent.innerHTML = `<small>БЛИЖАЙШАЯ АРЕНДА</small><strong>500 ₽</strong><p>${gameState.money >= 500 ? "На следующий платёж хватает." : "Не хватает " + money(500 - gameState.money) + "."}</p><span>Без учёта покупок и других расходов.</span>`;
     const research = gameState.inventory.filter((i) => !i.expertiseDone).length;
     const offers = gameState.sellingItems.reduce(
       (n, i) => n + (i.offers?.length || 0),
       0,
     );
     $("studio-actions").innerHTML =
-      `<button data-studio-tab="market"><span class="agenda-number">01</span><div><strong>Найти что-то стоящее</strong><small>${gameState.marketItems.length} предложений на рынке</small></div>${svg("arrow")}</button><button data-studio-stage="research"><span class="agenda-number">02</span><div><strong>${research ? "Присмотреться к покупкам" : "Собрать свою коллекцию"}</strong><small>${research ? research + " ждут экспертизы" : "Каждая история начинается с первой вещи"}</small></div>${svg("arrow")}</button><button data-studio-tab="selling"><span class="agenda-number">03</span><div><strong>${offers ? "Вам предлагают сделку" : "Дать вещам новую жизнь"}</strong><small>${offers ? offers + " предложений покупателей" : gameState.sellingItems.length + " активных продаж"}</small></div>${svg("arrow")}</button>`;
+      `<button data-studio-tab="market"><span class="agenda-number">01</span><div><strong>Найти что-то стоящее</strong><small>${gameState.marketItems.length} предложений на рынке</small></div>${svg("arrow")}</button><button data-studio-stage="research"><span class="agenda-number">02</span><div><strong>${research ? "Присмотреться к покупкам" : "Найти товар на перепродажу"}</strong><small>${research ? research + " ждут экспертизы" : "Брать наугад — рискнуть своими"}</small></div>${svg("arrow")}</button><button data-studio-tab="selling"><span class="agenda-number">03</span><div><strong>${offers ? "Вам предлагают сделку" : "Вернуть деньги в карман"}</strong><small>${offers ? offers + " предложений покупателей" : gameState.sellingItems.length + " активных продаж"}</small></div>${svg("arrow")}</button>`;
     const items = gameState.inventory.slice(0, 3);
     $("studio-shelf-items").innerHTML = items.length
       ? items
@@ -207,16 +210,16 @@
               `<button class="shelf-item" data-studio-item="${esc(item.id)}"><div>${artwork(item)}<span>${item.expertiseDone ? "Оценён" : "На исследовании"}</span></div><h3>${esc(titleFor(item))}</h3><small>Куплено за <strong>${money(item.purchasePrice)}</strong></small></button>`,
           )
           .join("")
-      : `<div class="shelf-empty"><div class="shelf-ghost">${icon("inventory")}</div><div><h3>Первое место — для первой находки.</h3><p>Купленные предметы появятся на этой полке.</p><button data-studio-tab="market">Присмотреть что-нибудь ${svg("arrow")}</button></div></div>`;
+      : `<div class="shelf-empty"><div class="shelf-ghost">${icon("inventory")}</div><div><h3>Пока продавать нечего.</h3><p>Купленные вещи будут здесь. Сначала разберитесь, что вам подсунули.</p><button data-studio-tab="market">Искать товар ${svg("arrow")}</button></div></div>`;
     const cash = Math.min(100, Math.max(0, gameState.money / 1000)),
       rep = Math.min(100, Math.max(0, gameState.reputation * 2));
     $("studio-goal-metrics").innerHTML =
-      `<div><div><span>Капитал</span><strong>${money(gameState.money)} <small>/ 100 000 ₽</small></strong></div><progress value="${cash}" max="100" aria-label="Капитал: ${money(gameState.money)} из 100000 рублей"></progress></div><div><div><span>Репутация</span><strong>${gameState.reputation} <small>/ 50</small></strong></div><progress value="${rep}" max="100" aria-label="Репутация: ${gameState.reputation} из 50"></progress></div><p>Две цели вашего антикварного дела.</p>`;
+      `<div><div><span>Капитал</span><strong>${money(gameState.money)} <small>/ 100 000 ₽</small></strong></div><progress value="${cash}" max="100" aria-label="Капитал: ${money(gameState.money)} из 100000 рублей"></progress></div><div><div><span>Репутация</span><strong>${gameState.reputation} <small>/ 50</small></strong></div><progress value="${rep}" max="100" aria-label="Репутация: ${gameState.reputation} из 50"></progress></div><p>Условия победы прежние: 100 000 ₽ и 50 репутации.</p>`;
   }
-  const rename = dialog("shop-settings", "Название лавки");
+  const rename = dialog("shop-settings", "Название точки");
   rename.classList.add("shop-settings");
   $("rename-shop").onclick = () => {
-    rename.innerHTML = `<button class="dialog-close" data-close aria-label="Закрыть">${svg("close")}</button><div class="eyebrow">ТАБЛИЧКА НА ВАШЕЙ ДВЕРИ</div><h2>Как назовём лавку?</h2><form><label for="shop-name-input">Название</label><input id="shop-name-input" maxlength="32" required value="${esc(name)}" autocomplete="off"><p>Только название в интерфейсе. На игру не влияет.</p><button class="ux-primary">Повесить табличку ${svg("arrow")}</button></form>`;
+    rename.innerHTML = `<button class="dialog-close" data-close aria-label="Закрыть">${svg("close")}</button><div class="eyebrow">НАЗВАНИЕ В ЗАПИСНОЙ КНИЖКЕ</div><h2>Как назовём точку?</h2><form><label for="shop-name-input">Название</label><input id="shop-name-input" maxlength="32" required value="${esc(name)}" autocomplete="off"><p>Только название в интерфейсе. На игру не влияет.</p><button class="ux-primary">Записать ${svg("arrow")}</button></form>`;
     rename.querySelector("[data-close]").onclick = () => rename.close();
     rename.querySelector("form").onsubmit = (e) => {
       e.preventDefault();
@@ -338,7 +341,7 @@
   });
 
   // Notebook: plain text, explicit save, no research bonuses or hidden evidence.
-  const notebook = dialog("collector-notebook", "Полевой дневник");
+  const notebook = dialog("collector-notebook", "Записная книжка");
   let editingId = null,
     dirty = false;
   notebook.addEventListener("cancel", (e) => {
@@ -403,7 +406,7 @@
             )
             .join("")
         : "<p>Здесь будут ваши записи.</p>"
-    }</div></div></aside><section class="notebook-paper"><div class="eyebrow">ТОЛЬКО ВАШИ НАБЛЮДЕНИЯ</div><h2>${esc(item ? titleFor(item) : stored?.title || "То, что стоит запомнить.")}</h2><p class="notebook-intro">${item ? "Заметка о предмете. Она останется, даже если предложение исчезнет." : "Дневник не влияет на навыки и не подсказывает скрытые свойства вещей."}</p><form id="note-form"><label for="note-text">Личная запись</label><textarea id="note-text" maxlength="1500" placeholder="Что привлекло внимание? О чём спросить продавца? К какой вещи вернуться?">${esc(stored?.text || "")}</textarea><div class="note-meta"><span>День ${stored?.day || gameState.day}</span><span id="note-length">${stored?.text.length || 0} / 1500</span></div><div class="note-actions"><button class="ux-primary" type="submit">Сохранить запись ${svg("arrow")}</button>${stored ? '<button id="delete-note" type="button">Удалить запись</button>' : ""}</div><p id="note-status" role="status">Записи хранятся только в этом браузере, отдельно от игрового прогресса.</p></form><button id="export-notes" ${notes.length ? "" : "disabled"}>Скачать дневник .txt ${svg("arrow")}</button></section>`;
+    }</div></div></aside><section class="notebook-paper"><div class="eyebrow">ТОЛЬКО ВАШИ НАБЛЮДЕНИЯ</div><h2>${esc(item ? titleFor(item) : stored?.title || "Цены. Продавцы. Зацепки..")}</h2><p class="notebook-intro">${item ? "Заметка о предмете. Она останется, даже если предложение исчезнет." : "Дневник не влияет на навыки и не подсказывает скрытые свойства вещей."}</p><form id="note-form"><label for="note-text">Личная запись</label><textarea id="note-text" maxlength="1500" placeholder="Что привлекло внимание? О чём спросить продавца? К какой вещи вернуться?">${esc(stored?.text || "")}</textarea><div class="note-meta"><span>День ${stored?.day || gameState.day}</span><span id="note-length">${stored?.text.length || 0} / 1500</span></div><div class="note-actions"><button class="ux-primary" type="submit">Сохранить запись ${svg("arrow")}</button>${stored ? '<button id="delete-note" type="button">Удалить запись</button>' : ""}</div><p id="note-status" role="status">Записи хранятся только в этом браузере, отдельно от игрового прогресса.</p></form><button id="export-notes" ${notes.length ? "" : "disabled"}>Скачать дневник .txt ${svg("arrow")}</button></section>`;
     notebook.querySelector("[data-note-close]").onclick = requestNotebookClose;
     $("new-note").onclick = () => openNotebook();
     notebook
@@ -490,7 +493,7 @@
   }
   const noteLauncher = document.createElement("button");
   noteLauncher.className = "sidebar-notebook";
-  noteLauncher.innerHTML = icon("notebook") + "<span>Полевой дневник</span>";
+  noteLauncher.innerHTML = icon("notebook") + "<span>Записная книжка</span>";
   noteLauncher.onclick = () => openNotebook();
   document.querySelector(".sidebar-bottom").before(noteLauncher);
   document.addEventListener("torg:preview", (e) => {
@@ -559,7 +562,7 @@
   function renderPalette() {
     const query = $("palette-query").value.toLocaleLowerCase("ru").trim();
     const sections = [
-      ["atelier", "Моя лавка", "Кабинет коллекционера"],
+      ["atelier", "Моя точка", "Перед выходом на рынок"],
       ["market", "Барахолка", "Поиск новых находок"],
       ["inventory", "Коллекция", "Исследование и оценка"],
       ["selling", "Продажа", "Предложения покупателей"],
@@ -576,7 +579,7 @@
       },
     }));
     sections.push({
-      title: "Полевой дневник",
+      title: "Записная книжка",
       subtitle: "Ваши личные записи",
       icon: "notebook",
       run: () => {
@@ -683,7 +686,7 @@
       return;
     boughtBefore = gameState.stats.bought;
     const item = gameState.inventory[0];
-    receipt.innerHTML = `<button class="receipt-close" aria-label="Закрыть квитанцию">${svg("close")}</button><div class="receipt-art">${artwork(item)}</div><div class="receipt-content"><span class="receipt-stamp">ТЕПЕРЬ В ВАШЕЙ КОЛЛЕКЦИИ</span><h3>${esc(titleFor(item))}</h3><p>Договорились на <strong>${money(item.purchasePrice)}</strong></p><button class="receipt-action">Открыть коллекцию ${svg("arrow")}</button></div>`;
+    receipt.innerHTML = `<button class="receipt-close" aria-label="Закрыть квитанцию">${svg("close")}</button><div class="receipt-art">${artwork(item)}</div><div class="receipt-content"><span class="receipt-stamp">ДЕНЬГИ ОТДАНЫ. ВЕЩЬ ВАША.</span><h3>${esc(titleFor(item))}</h3><p>Договорились на <strong>${money(item.purchasePrice)}</strong></p><button class="receipt-action">К вещам ${svg("arrow")}</button></div>`;
     receipt.querySelector(".receipt-close").onclick = dismissReceipt;
     receipt.querySelector(".receipt-action").onclick = () => {
       dismissReceipt();

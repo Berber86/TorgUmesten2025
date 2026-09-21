@@ -115,7 +115,13 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || "playwright");
   assert.equal(await page.locator(".market-hero").isVisible(), false);
   await page.locator("#compact-walk").click();
   assert.equal(await page.locator("#walking-market").isVisible(), true);
+  assert.equal(await page.locator("#walking-hud").isVisible(), false);
   await page.locator("#marketViewToggle").click();
+  assert(
+    await page
+      .locator(".seller-portrait-video")
+      .evaluateAll((videos) => videos.every((video) => video.paused)),
+  );
   await page.locator("#market-focus").click();
   for (const width of [360, 390, 700, 768, 1024, 1440]) {
     await page.setViewportSize({ width, height: 900 });

@@ -4,7 +4,7 @@
 
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Торг уместен — искусство находить ценное</title>
+    <title>Торг уместен — дотянуть до завтра</title>
 
 <script src="constants.js"></script>
 <script src="game_core.js"></script>
@@ -25,6 +25,7 @@
 <link rel="stylesheet" href="continuity.css">
 <link rel="stylesheet" href="ledger.css">
 <link rel="stylesheet" href="catalogue.css">
+<link rel="stylesheet" href="survival.css">
 </head>
 <body class="p-1 md:p-2 ">
     <div id="notificationContainer"></div>
@@ -34,12 +35,12 @@
         <aside class="sidebar">
 <a class="brand" href="./" aria-label="Торг уместен — главная"><span class="brand-symbol">ту<span>↗</span></span><span>торг<br>уместен<span class="brand-dot">.</span></span></a>
 <div class="sidebar-caption">ЛИЧНОЕ ДЕЛО</div><div id="navigation-slot"></div>
-<div class="sidebar-bottom"><div class="collector-avatar">Б</div><div><strong>Барахольщик</strong><span>Начинающий коллекционер</span></div></div>
-<div class="sidebar-note">У каждой вещи — своя история.<br>Найдите ту, что стоит дороже.</div>
+<div class="sidebar-bottom"><div class="collector-avatar">Б</div><div><strong>Барахольщик</strong><span>Начинающий перекуп</span></div></div>
+<div class="sidebar-note">Дождь не кончается.<br>Деньги — кончаются.</div>
 </aside>
 <div id="game-shell" class="bg-white rounded-lg shadow-xl mb-1 flex flex-col">
 <header class="topbar"><div class="breadcrumb">Личное дело <span>/</span> <strong id="page-label">Барахолка</strong></div><div class="topbar-right"><button class="help-shortcut" onclick="switchTab('help')" aria-label="Открыть справку">?</button></div></header>
-<section class="wallet-strip" aria-label="Показатели игрока"><div><span class="stat-icon">₽</span><div><small>Ваш капитал</small><strong id="hud-money">10 000 ₽</strong></div></div><div><span class="stat-icon">✧</span><div><small>Репутация</small><strong><span id="hud-reputation">10</span> <em>очков</em></strong></div></div><div><span class="stat-icon">ϟ</span><div><small>Внимание</small><strong><span id="hud-attention">100</span> <em>ед.</em></strong></div><div class="energy-track"><i id="hud-energy"></i></div></div><div><span class="stat-icon">▣</span><div><small>Ваша коллекция</small><strong><span id="hud-inventory">0</span> <em>предметов</em></strong></div></div></section>
+<section class="wallet-strip" aria-label="Показатели игрока"><div><span class="stat-icon">₽</span><div><small>Деньги на руках</small><strong id="hud-money">10 000 ₽</strong></div></div><div><span class="stat-icon">✧</span><div><small>Репутация</small><strong><span id="hud-reputation">10</span> <em>очков</em></strong></div></div><div><span class="stat-icon">ϟ</span><div><small>Внимание</small><strong><span id="hud-attention">100</span> <em>ед.</em></strong></div><div class="energy-track"><i id="hud-energy"></i></div></div><div><span class="stat-icon">▣</span><div><small>Вещи на руках</small><strong><span id="hud-inventory">0</span> <em>предметов</em></strong></div></div></section>
             <!-- В блоке с вкладками добавляем новую кнопку -->
 <div class="flex border-b overflow-x-auto flex-shrink-0">
     <button class="tab-active px-6 py-3 font-semibold rounded-tl-lg whitespace-nowrap" onclick="switchTab('market')" id="tab-market">🏪 Рынок</button>
@@ -519,8 +520,8 @@
 </div>
 <!-- Вставьте этот код в раздел с вкладками рынка, после заголовка "Барахолка" -->
 <div id="content-market" class="p-3 flex-1 overflow-y-auto">
-    <div class="page-heading"><div><div class="eyebrow">МЕСТО, ГДЕ НАЧИНАЮТСЯ ИСТОРИИ</div><h1>Барахолка<span>.</span></h1><p>Среди старых вещей прячутся большие возможности.</p></div><div class="day-actions"><span class="day-badge"><i></i> День <span id="marketDay">1</span></span><button id="nextDayBtn" onclick="nextDay()">Следующий день <span>↗</span><small>Аренда: 500 ₽</small></button></div></div>
-    <section class="market-hero"><div class="hero-copy"><span class="hero-label"><i></i> ОХОТА ЗА СОКРОВИЩАМИ</span><h2>Чужое прошлое.<br><em>Ваша находка.</em></h2><p>Присмотритесь. Задайте вопросы.<br>И никогда не соглашайтесь на первую цену.</p><button onclick="toggleMarketView()" id="marketViewToggle">Прогуляться по рынку <span>↗</span></button></div><span class="hero-caption">ВЕЩИ С ИСТОРИЕЙ · ЦЕНЫ С ХАРАКТЕРОМ</span></section>
+    <div class="page-heading"><div><div class="eyebrow">СЫРОЙ ДВОР / ЖИВЫЕ ДЕНЬГИ</div><h1>Барахолка<span>.</span></h1><p>Цена на словах. Риск — за твой счёт.</p></div><div class="day-actions"><span class="day-badge"><i></i> День <span id="marketDay">1</span></span><button id="nextDayBtn" onclick="nextDay()">Следующий день <span>↗</span><small>Аренда: 500 ₽</small></button></div></div>
+    <section class="market-hero"><div class="hero-copy"><span class="hero-label"><i></i> ОХОТА ЗА СОКРОВИЩАМИ</span><h2>Кто-то сбывает хлам.<br><em>Ты ищешь выход.</em></h2><p>Присмотритесь. Задайте вопросы.<br>И никогда не соглашайтесь на первую цену.</p><button onclick="toggleMarketView()" id="marketViewToggle">Прогуляться по рынку <span>↗</span></button></div><span class="hero-caption">СМОТРИ В ОБА. ТОРГУЙСЯ.</span></section>
     <div class="market-section-title"><h2>На прилавках <span id="market-count">0</span></h2><label class="market-search"><span>⌕</span><input id="market-search" type="search" placeholder="Найти что-нибудь ценное…" aria-label="Поиск товаров"></label></div>
     <div class="market-toolbar"><div class="filter-tabs" role="group" aria-label="Категории товаров"><button class="selected" data-category="all">Все находки</button><button data-category="porcelain">Фарфор</button><button data-category="metal">Металл</button><button data-category="painting">Живопись</button><button data-category="books">Книги</button><button data-category="militaria">Милитария</button></div><select id="market-sort" aria-label="Сортировка товаров"><option value="default">Сначала новые</option><option value="low">Сначала дешевле</option><option value="high">Сначала дороже</option></select></div>
     <!-- Существующий вид рынка (по умолчанию видимый) -->
@@ -598,7 +599,7 @@
             </div>
 
 <!-- Footer -->
-<footer class="game-footer"><span>ТОРГ УМЕСТЕН <i> / </i> Симулятор охотника за редкостями</span><div><button onclick="toggleGameMode()" aria-label="Переключить режим игры">Режим игры</button><button onclick="resetGame()">Новая игра ↗</button></div></footer>
+<footer class="game-footer"><span>ТОРГ УМЕСТЕН <i> / </i> Перекуп. Петербург. Выживание.</span><div><button onclick="toggleGameMode()" aria-label="Переключить режим игры">Режим игры</button><button onclick="resetGame()">Новая игра ↗</button></div></footer>
     </div>
 
     <!-- Модальное окно торга - ОБНОВЛЕННАЯ ВЕРСИЯ -->
@@ -3827,5 +3828,6 @@ window.switchTab = switchTab; // Переопределяем на обновл�
 <script src="save-schema.js"></script>
 <script src="continuity.js"></script>
 <script src="ledger.js"></script>
+<script src="street.js"></script>
 </body>
 </html>

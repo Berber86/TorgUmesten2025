@@ -28,13 +28,27 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || "playwright");
   );
   await page.waitForTimeout(400);
   await page.evaluate(() => document.fonts.ready);
+  assert.match(await page.locator("#studio-rent").textContent(), /500/);
+  const initialCash = await page.evaluate(() => gameState.money);
+  await page.evaluate(() => {
+    gameState.money = 125;
+    switchTab("atelier");
+  });
+  assert.match(
+    await page.locator("#studio-rent").textContent(),
+    /Не хватает 375/,
+  );
+  await page.evaluate((cash) => {
+    gameState.money = cash;
+    switchTab("atelier");
+  }, initialCash);
   const before = await page.evaluate(() => JSON.stringify(gameState));
   assert(
     (
       await page
         .locator(".studio-masthead h1")
         .evaluate((el) => getComputedStyle(el).fontFamily)
-    ).includes("Georgia"),
+    ).includes("Golos Text"),
   );
   const shot = async (name) => {
     await page.waitForTimeout(250);
@@ -64,6 +78,12 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || "playwright");
       }
     }
     if (width === 390) {
+      await page.evaluate(() => {
+        switchTab("atelier");
+        scrollTo(0, 0);
+      });
+      await shot("survival-home-mobile");
+      await page.evaluate(() => switchTab("market"));
       await page.evaluate(() => scrollTo(0, 0));
       await shot("catalogue-market-mobile");
       await page.locator(".find-open").first().click();
@@ -81,10 +101,10 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || "playwright");
       await page
         .locator(".market-hero")
         .evaluate((el) => getComputedStyle(el).backgroundImage)
-    ).includes("catalogue-hero.jpg"),
+    ).includes("assets/market-rain.webp"),
   );
   const image = await page.request.get(
-    new URL("/assets/catalogue-hero.jpg", page.url()).href,
+    new URL("/assets/market-rain.webp", page.url()).href,
   );
   assert(image.ok());
   await page.evaluate(() => {
@@ -108,7 +128,7 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || "playwright");
   assert.deepEqual(errors, []);
   await browser.close();
   console.log(
-    "PASS: catalogue typography, new local artwork, single-column mobile, 360–1440px layouts, preview, reduced motion, unchanged game state, no JS errors.",
+    "PASS: catalogue typography, original rainy-market artwork, single-column mobile, 360–1440px layouts, preview, reduced motion, unchanged game state, no JS errors.",
   );
 })().catch((e) => {
   console.error(e);
