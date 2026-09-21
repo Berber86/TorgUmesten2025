@@ -70,15 +70,25 @@ function toggleDebugConsole() {
     console.classList.toggle('hidden');
 }
 
+function saveHaggleProgress() {
+    const h = currentHaggle;
+    if (!h || h.finished || h.purchaseCompleted || !gameState.marketItems.some(i => i.id === h.item.id)) return;
+    h.item.haggleState = {
+        currentPrice: h.currentPrice, patience: h.patience, maxPatience: h.maxPatience,
+        usedTactics: [...h.usedTactics], competitors: h.competitors.map(c => ({...c})),
+        currentQuote: h.currentQuote || ''
+    };
+}
+
 function closeHaggle() {
-            if (currentHaggle && currentHaggle.item) {
-                gameState.marketItems = gameState.marketItems.filter(i => i.id !== currentHaggle.item.id);
-                renderMarket();
-            }
-            document.getElementById('haggleModal').classList.add('hidden');
-            currentHaggle = null;
-            gameState.firstDealToday = false;
-        }
+    saveHaggleProgress();
+    document.getElementById('haggleModal').classList.add('hidden');
+    currentHaggle = null;
+    gameState.firstDealToday = false;
+    renderMarket();
+    updateDisplay();
+    saveGame();
+}
 
 function closeExpertise() {
             document.getElementById('expertiseModal').classList.add('hidden');

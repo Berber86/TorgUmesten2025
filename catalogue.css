@@ -1,0 +1,800 @@
+/* Edition VI — warm paper, ink and a collector's catalogue.
+   Presentation only. All existing controls, game state and save formats remain intact. */
+:root {
+  --paper: #f7f3ea;
+  --cream: #f4ecdf;
+  --forest: #343c32;
+  --muted: #716d62;
+  --border: #dcd3c3;
+  --border-light: #ded6c8;
+  --line: #ded6c8;
+  --ink: #302d27;
+  --atelier-paper: #faf6ed;
+  --atelier-green: #343c32;
+  --atelier-line: #dcd3c3;
+  --catalogue-rust: #9d4d34;
+}
+body {
+  background: var(--paper) !important;
+  color: var(--ink) !important;
+}
+#game-shell.bg-white {
+  background: var(--paper) !important;
+}
+.sidebar {
+  background: #282d27;
+  background-image: radial-gradient(ellipse at 0 0, #84715030, transparent 65%);
+  border-right: 1px solid #534f4033;
+}
+.brand {
+  letter-spacing: -1.4px;
+  padding-bottom: 40px;
+}
+.brand-symbol {
+  border-color: #bfa37d !important;
+  color: #e4c298;
+  transform: rotate(-5deg);
+}
+.sidebar-caption {
+  color: #baae99;
+  letter-spacing: 2.1px;
+  font-size: 9px;
+}
+.main-navigation button.px-6.py-3.font-semibold {
+  border-radius: 3px !important;
+  font-size: 12px !important;
+}
+.main-navigation button.tab-active {
+  background: #d4c29b17 !important;
+  border-left: 2px solid #c38c58 !important;
+  color: #fff3da !important;
+}
+.sidebar-note {
+  color: #b3b09e;
+  line-height: 1.9;
+}
+.sidebar-bottom {
+  border-top-color: #ffffff18;
+}
+.collector-avatar {
+  background: #b99f7130;
+  color: #e4c99b;
+}
+.topbar {
+  background: #faf7f0;
+  border-bottom: 1px solid var(--border);
+  height: 66px;
+}
+.breadcrumb {
+  color: #81796b;
+  font-size: 11px;
+}
+.breadcrumb strong {
+  color: #4d493e;
+  font-weight: 500;
+}
+.wallet-strip {
+  background: #f0eadf;
+  border-bottom: 1px solid var(--border);
+  padding-top: 20px;
+  padding-bottom: 20px;
+}
+.wallet-strip .stat-icon {
+  background: #e4ddce;
+  color: #685b44;
+  border-radius: 50%;
+}
+.wallet-strip small {
+  color: #776e60;
+  font-size: 10px;
+}
+.wallet-strip strong {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 26px;
+  font-weight: 400;
+  letter-spacing: -0.6px;
+  color: #38382d;
+}
+.wallet-strip strong em {
+  font-family: "Golos Text", sans-serif;
+  letter-spacing: 0;
+  font-size: 10px;
+  color: #817969;
+}
+.wallet-strip > div + div {
+  border-left-color: #d9cfbe;
+}
+.energy-track {
+  background: #ded5c3;
+}
+.energy-track i {
+  background: #8b7955;
+}
+.page-heading h1,
+.studio-masthead h1 {
+  font-family: Georgia, "Times New Roman", serif;
+  font-weight: 400;
+  font-size: clamp(36px, 3.7vw, 56px);
+  line-height: 1.08;
+  letter-spacing: -1.8px;
+}
+.page-heading h1 > span,
+.studio-dot {
+  color: var(--catalogue-rust);
+}
+.page-heading p,
+.studio-masthead p {
+  color: #7b7467;
+  font-size: 12px;
+  line-height: 1.8;
+}
+.eyebrow {
+  color: #837153;
+  letter-spacing: 2px;
+  font-size: 9px;
+}
+.page-heading,
+.studio-masthead {
+  padding-bottom: 24px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 28px;
+}
+.studio-edit {
+  background: transparent;
+  color: #716551;
+  border-color: #cfc2ac !important;
+  border-radius: 3px !important;
+}
+.studio-top {
+  gap: 0;
+  grid-template-columns: minmax(0, 1fr) 300px;
+  border: 1px solid #d1c5b1;
+  border-radius: 5px;
+  overflow: hidden;
+  background: #ede5d6;
+}
+.studio-scene {
+  height: 490px;
+  border-radius: 0;
+}
+.studio-scene > img {
+  object-position: 50% 58%;
+}
+.studio-scene:after {
+  background: linear-gradient(180deg, #151911a6, transparent 62%, #1519119c);
+}
+.scene-heading {
+  top: 34px;
+  left: 34px;
+}
+.scene-heading h2 {
+  font-size: clamp(30px, 3.1vw, 48px);
+  letter-spacing: -1.2px;
+  line-height: 1.05;
+  margin-top: 20px;
+}
+.scene-open {
+  letter-spacing: 2.2px;
+  color: #ecd7ad;
+}
+.scene-hotspot {
+  border-radius: 2px !important;
+  background: #f8f1e4f5 !important;
+  box-shadow: 0 6px 24px #11180d20;
+  padding: 13px 15px;
+  color: #4a4738;
+}
+.scene-hotspot > span {
+  border-color: #c9b691;
+  color: #8f7750;
+}
+.scene-hotspot small {
+  font-size: 9px;
+  color: #756e5d;
+}
+.scene-caption {
+  font-size: 8px;
+  letter-spacing: 1.3px;
+  color: #f5e7ce;
+}
+.studio-agenda {
+  border: 0;
+  border-left: 1px solid #d2c4a9;
+  border-radius: 0;
+  background: #ece4d4;
+  padding: 32px 25px 22px;
+}
+.studio-agenda h2 {
+  font-family: Georgia, serif;
+  font-size: 31px;
+  font-weight: 400;
+  line-height: 1.08;
+  letter-spacing: -0.7px;
+  color: #494332;
+}
+.agenda-head .eyebrow,
+.agenda-head > span:last-child {
+  color: #8b7958;
+}
+.agenda-foot {
+  color: #807253;
+  border-top-color: #d5c7ad;
+}
+.studio-bottom {
+  margin-top: 28px;
+  gap: 26px;
+}
+.studio-shelf,
+.studio-goals {
+  border-radius: 4px !important;
+  border-color: var(--border) !important;
+  background: #faf7ef;
+}
+.studio-shelf h2,
+.studio-goals h2 {
+  font-family: Georgia, serif;
+  font-weight: 400;
+  letter-spacing: -0.5px;
+}
+.studio-notebook-banner {
+  background: #e9dfcb;
+  border-color: #d5c5a8;
+  border-radius: 4px;
+  margin-top: 26px;
+}
+.studio-notebook-banner h3 {
+  font-family: Georgia, serif;
+  font-weight: 400;
+  font-size: 27px;
+  color: #4e4738;
+}
+.studio-vault-card {
+  background: transparent;
+  border: 0;
+  border-top: 1px solid var(--border);
+  padding: 25px 0;
+}
+.studio-vault-card h3 {
+  font-size: 23px;
+}
+.market-hero {
+  height: 310px;
+  border-radius: 4px;
+  background-image:
+    linear-gradient(90deg, #1e211cc4 0%, #22241b38 50%, transparent 80%),
+    url("assets/catalogue-hero.jpg") !important;
+  background-size: cover;
+  background-position: center 55%;
+  box-shadow: none;
+}
+.hero-copy {
+  padding: 30px 35px;
+}
+.hero-label {
+  font-size: 8px;
+  letter-spacing: 2.4px;
+  color: #ddc39b;
+}
+.hero-copy h2 {
+  font-family: Georgia, serif;
+  font-size: 48px;
+  font-weight: 400;
+  line-height: 1.03;
+  letter-spacing: -1.3px;
+  margin: 17px 0 13px;
+  color: #fbf0dc;
+}
+.hero-copy h2 em {
+  color: #e2bd81;
+}
+.hero-copy p {
+  font-size: 11px;
+  line-height: 1.8;
+  color: #d6cdbb;
+}
+.hero-copy #marketViewToggle {
+  left: 35px;
+  bottom: 24px;
+  border-radius: 2px !important;
+  font-size: 10px !important;
+  background: #f4ead7 !important;
+  color: #494031;
+  padding: 10px 15px;
+}
+.hero-caption {
+  color: #e6dac0;
+  font-size: 8px;
+  letter-spacing: 1.5px;
+  right: 28px;
+  bottom: 27px;
+}
+.market-toolbar {
+  background: #eee7da;
+  border-color: #d8cbb8;
+  border-radius: 4px;
+}
+.market-toolbar input,
+.market-toolbar select {
+  border-radius: 3px !important;
+  background: #faf7ef !important;
+}
+.market-section-title {
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 17px;
+}
+#marketItems:not(.catalog-list) {
+  gap: 25px;
+}
+.find-card {
+  border: 1px solid #d9d0c0;
+  border-radius: 3px;
+  background: #fffcf5;
+  box-shadow: 0 3px 8px #40301c04;
+}
+.find-card:hover {
+  border-color: #b8a181;
+  box-shadow: 0 10px 25px #57402512;
+  transform: translateY(-3px);
+}
+#marketItems:not(.catalog-list) .find-art {
+  height: 250px;
+  background: #e9e0d1;
+}
+.find-art img {
+  filter: saturate(0.86);
+  transition:
+    transform 0.6s ease,
+    filter 0.6s ease;
+}
+.find-image-button:hover img {
+  filter: saturate(1);
+  transform: scale(1.045);
+}
+.find-category {
+  background: #faf3e6eb;
+  color: #63563e;
+  border-radius: 2px;
+  font-size: 9px;
+  letter-spacing: 0.3px;
+}
+.favorite-button {
+  background: #faf4e9ee !important;
+  color: #6a5e47;
+  border-radius: 50% !important;
+}
+.art-disclaimer {
+  color: #5b5548;
+  background: #f4ebd9c9;
+}
+.find-content {
+  padding: 21px;
+}
+.find-meta {
+  color: #8a785c;
+  font-size: 8px;
+  letter-spacing: 1px;
+}
+.find-content h3 button {
+  font-family: Georgia, "Times New Roman", serif !important;
+  font-size: 21px !important;
+  font-weight: 400;
+  line-height: 1.2;
+  letter-spacing: -0.3px;
+  color: #3d392f;
+}
+.find-seller {
+  color: #817764;
+  font-size: 10px;
+}
+.find-price {
+  border-top: 1px solid #e5dbcb;
+  padding-top: 16px;
+}
+.find-price strong {
+  font-family: Georgia, serif;
+  font-weight: 400;
+  font-size: 27px;
+  letter-spacing: -0.6px;
+  color: #4d4938;
+}
+.find-price small {
+  font-size: 9px;
+  color: #84745f;
+}
+.find-price > span {
+  font-size: 8px;
+  color: #817259;
+}
+.find-open {
+  border-radius: 2px !important;
+  background: #eee5d3 !important;
+  color: #5a4b35 !important;
+  border: 1px solid #dfd0b6 !important;
+  font-size: 10px !important;
+  min-height: 40px;
+}
+.find-open:hover {
+  background: #dfcdb0 !important;
+}
+.catalog-list .find-content h3 button {
+  font-size: 19px !important;
+}
+.catalog-list .find-price {
+  border-top: 0;
+  padding-top: 0;
+}
+#inventoryItems > .card {
+  border-radius: 3px !important;
+  border-color: #d9d0c0 !important;
+  background: #fffcf5 !important;
+}
+#inventoryItems .collection-name {
+  font-family: Georgia, serif;
+  font-size: 21px;
+  font-weight: 400;
+  line-height: 1.25;
+  color: #433b2d;
+}
+.sale-lot {
+  border-color: var(--border) !important;
+  border-radius: 4px !important;
+  background: #fffcf5 !important;
+}
+.sales-inbox {
+  background: #e9e1d1;
+  border-color: #d6c7af;
+  border-radius: 4px;
+}
+#deal-ledger {
+  border-radius: 4px;
+  border-color: #d6c7af;
+}
+.ledger-cover,
+.vault-cover,
+.report-balance {
+  background: #343b30;
+}
+.ledger-cover h2 {
+  font-size: 46px;
+  letter-spacing: -1px;
+}
+.ledger-tools input,
+.ledger-tools select,
+.vault-import input {
+  background: #fffaf1 !important;
+  border-radius: 3px !important;
+}
+.ledger-list-head {
+  background: #ede4d4;
+}
+.ledger-row:hover {
+  background: #eee5d4;
+}
+.ux-dialog {
+  border-radius: 6px;
+  background: #fbf7ee;
+  border-color: #d7c9b2;
+  box-shadow: 0 28px 100px #21190e50;
+}
+.ux-dialog::backdrop {
+  background: #201f1ac2;
+  backdrop-filter: blur(6px);
+}
+.preview-art {
+  background: #e9e0d0;
+}
+.preview-info h2 {
+  font-family: Georgia, serif;
+  font-weight: 400;
+  letter-spacing: -0.8px;
+}
+.preview-note {
+  background: #eee6d6;
+  border-radius: 3px;
+  border-left: 2px solid #b39669;
+}
+.ux-primary {
+  background: #874a34 !important;
+  border-radius: 3px !important;
+}
+.ux-primary:hover {
+  background: #743e2c !important;
+}
+.ux-secondary {
+  border-radius: 3px !important;
+  color: #6d6049 !important;
+  border-color: #cfc1a8 !important;
+}
+.dialog-close {
+  background: #ece3d2 !important;
+  color: #64563f !important;
+}
+.day-report {
+  background: #faf6ec;
+  border-radius: 5px;
+}
+.vault-status.good {
+  background: #e8e8db;
+  color: #4a563c;
+  border-color: #d0d2ba;
+}
+.game-footer {
+  border-top-color: #d9cfbd;
+  color: #877a63;
+  letter-spacing: 0.2px;
+}
+.mobile-dock {
+  background: #faf5e9f5 !important;
+  border-top-color: #d5c6ac !important;
+  backdrop-filter: blur(12px);
+}
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid #a15c36 !important;
+  outline-offset: 4px;
+}
+@media (min-width: 1450px) {
+  #marketItems:not(.catalog-list) .find-art {
+    height: 280px;
+  }
+  .studio-scene {
+    height: 540px;
+  }
+}
+@media (max-width: 1100px) {
+  .studio-top {
+    grid-template-columns: minmax(0, 1fr) 260px;
+  }
+  .studio-scene {
+    height: 440px;
+  }
+  .studio-agenda {
+    padding: 27px 20px;
+  }
+  .studio-agenda h2 {
+    font-size: 27px;
+  }
+  .scene-heading {
+    left: 26px;
+    top: 28px;
+  }
+  .scene-heading h2 {
+    font-size: 34px;
+  }
+  #marketItems:not(.catalog-list) .find-art {
+    height: 220px;
+  }
+  .find-content {
+    padding: 17px;
+  }
+  .find-content h3 button {
+    font-size: 20px !important;
+  }
+  .hero-caption {
+    max-width: 180px;
+    text-align: right;
+    line-height: 1.8;
+  }
+  .wallet-strip strong {
+    font-size: 23px;
+  }
+}
+@media (max-width: 760px) {
+  .topbar {
+    height: 55px;
+  }
+  .wallet-strip {
+    padding-top: 15px;
+    padding-bottom: 15px;
+  }
+  .wallet-strip strong {
+    font-size: 22px;
+  }
+  .wallet-strip small {
+    font-size: 9px;
+  }
+  .page-heading h1,
+  .studio-masthead h1 {
+    font-size: 37px;
+    letter-spacing: -1.3px;
+  }
+  .page-heading,
+  .studio-masthead {
+    padding-bottom: 18px;
+    margin-bottom: 22px;
+  }
+  .studio-top {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+  .studio-scene {
+    height: 430px;
+  }
+  .studio-agenda {
+    border-left: 0;
+    border-top: 1px solid #d2c4a9;
+    padding: 24px;
+  }
+  .studio-agenda h2 {
+    font-size: 29px;
+  }
+  .scene-heading h2 {
+    font-size: 39px;
+  }
+  .studio-bottom {
+    gap: 20px;
+  }
+  .studio-notebook-banner h3 {
+    font-size: 25px;
+  }
+  .market-hero {
+    height: 290px;
+    background-position: 62% center;
+  }
+  .hero-copy {
+    padding: 27px;
+  }
+  .hero-copy h2 {
+    font-size: 43px;
+  }
+  .hero-copy #marketViewToggle {
+    left: 27px;
+    bottom: 23px;
+  }
+  .hero-caption {
+    display: none;
+  }
+  #marketItems:not(.catalog-list) .find-art {
+    height: 240px;
+  }
+  .find-content h3 button {
+    font-size: 22px !important;
+  }
+  .ledger-cover h2 {
+    font-size: 37px;
+  }
+  .studio-vault-card {
+    padding: 23px 5px;
+  }
+}
+@media (max-width: 440px) {
+  .page-heading h1,
+  .studio-masthead h1 {
+    font-size: 33px;
+  }
+  .studio-masthead p,
+  .page-heading p {
+    font-size: 11px;
+  }
+  .studio-scene {
+    height: 395px;
+  }
+  .scene-heading {
+    top: 26px;
+    left: 22px;
+  }
+  .scene-heading h2 {
+    font-size: 34px;
+  }
+  .scene-hotspot {
+    padding: 11px 13px;
+  }
+  .scene-caption {
+    font-size: 7px;
+    letter-spacing: 0.7px;
+  }
+  .studio-agenda {
+    padding: 22px;
+  }
+  .market-hero {
+    height: 285px;
+  }
+  .hero-copy {
+    padding: 25px 22px;
+  }
+  .hero-copy h2 {
+    font-size: 39px;
+  }
+  .hero-copy #marketViewToggle {
+    left: 22px;
+    bottom: 22px;
+  }
+  .hero-copy p {
+    font-size: 10px;
+  }
+  .wallet-strip strong {
+    font-size: 21px;
+  }
+  .wallet-strip strong em {
+    font-size: 9px;
+  }
+  .wallet-strip .stat-icon {
+    width: 28px;
+    height: 28px;
+  }
+  #marketItems:not(.catalog-list) .find-art {
+    height: 235px;
+  }
+  .find-content {
+    padding: 20px;
+  }
+  .find-price strong {
+    font-size: 29px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .studio-scene > img,
+  .find-card,
+  .find-art img {
+    transition: none !important;
+  }
+  .studio-scene:hover > img,
+  .find-card:hover,
+  .find-image-button:hover img {
+    transform: none !important;
+  }
+}
+/* Conversations use the same paper and ink as the catalogue. */
+#haggleModal > .negotiation-shell {
+  background: #fcf8ef !important;
+  border: 1px solid #d8cbb6;
+  border-radius: 6px !important;
+}
+#haggleModal .negotiation-heading h2 {
+  font-family: Georgia, serif;
+  font-size: 27px;
+  font-weight: 400;
+  letter-spacing: -0.5px;
+}
+#haggleModal .seller-conversation {
+  background: #eee5d4 !important;
+  border-color: #d6c4a7 !important;
+  border-radius: 4px !important;
+}
+#haggleModal #sellerQuote {
+  color: #746044 !important;
+}
+#haggleModal #sellerType,
+#haggleModal #sellerSubtype {
+  color: #766c59;
+}
+#haggleModal #currentPrice {
+  font-family: Georgia, serif;
+  font-size: 29px;
+  font-weight: 400;
+  color: #5e573d !important;
+}
+#haggleModal .tactic-btn:not(:disabled) {
+  background: #e7ddc9 !important;
+  color: #584b34 !important;
+  border-color: #d5c3a3 !important;
+  border-radius: 3px !important;
+}
+#haggleModal .tactic-btn:not(:disabled):hover {
+  background: #d9c7a8 !important;
+}
+@media (max-width: 520px) {
+  #marketItems:not(.catalog-list) {
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 22px;
+  }
+  #marketItems:not(.catalog-list) .find-art {
+    height: 270px;
+  }
+  .find-content h3 button {
+    font-size: 24px !important;
+  }
+  .find-meta {
+    font-size: 9px;
+  }
+  .find-seller {
+    font-size: 11px;
+  }
+  .find-open {
+    min-height: 44px;
+    font-size: 11px !important;
+  }
+}

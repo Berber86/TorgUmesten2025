@@ -1,0 +1,416 @@
+/* Edition V: the trading ledger, not a second source of game truth. */
+#deal-ledger {
+  margin-top: 30px;
+  border: 1px solid var(--border);
+  background: var(--paper);
+  border-radius: 12px;
+  overflow: hidden;
+}
+.ledger-cover {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--forest);
+  color: var(--cream);
+  padding: 32px 38px;
+  gap: 25px;
+}
+.ledger-cover .eyebrow {
+  color: #d0c6ad;
+}
+.ledger-cover h2 {
+  font:
+    400 42px/1.05 Georgia,
+    serif;
+  letter-spacing: -1px;
+  margin: 17px 0;
+}
+.ledger-cover h2 em {
+  color: #d3bd91;
+}
+.ledger-cover p {
+  font-size: 11px;
+  color: #cad1c3;
+  line-height: 1.8;
+  margin: 0;
+}
+.ledger-seal {
+  border: 1px solid #c8ac7270;
+  width: 120px;
+  height: 120px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font:
+    38px Georgia,
+    serif;
+  color: #d3bd91;
+  transform: rotate(-12deg);
+}
+.ledger-seal span {
+  font:
+    7px "Golos Text",
+    sans-serif;
+  letter-spacing: 2px;
+  margin-top: 10px;
+}
+.ledger-tools {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr 1fr 1fr;
+  gap: 13px;
+  padding: 26px 28px 20px;
+}
+.ledger-tools label {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 10px;
+  color: var(--muted);
+  min-width: 0;
+}
+.ledger-tools input,
+.ledger-tools select {
+  width: 100%;
+  min-width: 0;
+  padding: 11px 10px;
+  font-size: 11px;
+}
+.ledger-summary {
+  display: grid;
+  grid-template-columns: 0.7fr 1fr 1fr 1fr;
+  gap: 15px;
+  margin: 0 28px;
+  padding: 22px 0;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+.ledger-summary span {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.ledger-summary small {
+  font-size: 9px;
+  color: var(--muted);
+}
+.ledger-summary strong {
+  font:
+    27px Georgia,
+    serif;
+  overflow-wrap: anywhere;
+  color: var(--forest);
+}
+.is-loss,
+.is-loss strong {
+  color: #a34c32 !important;
+}
+.ledger-accounting {
+  font-size: 10px;
+  line-height: 1.8;
+  color: var(--muted);
+  margin: 15px 28px 24px;
+}
+.ledger-list-head {
+  padding: 13px 28px;
+  display: flex;
+  justify-content: space-between;
+  gap: 15px;
+  align-items: center;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  font-size: 8px;
+  letter-spacing: 1.5px;
+  background: #efeee5;
+}
+.ledger-list-head button {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  background: transparent;
+  color: var(--forest);
+  font-size: 10px !important;
+}
+.ledger-list-head svg,
+.inbox-actions svg {
+  width: 15px;
+  height: 15px;
+}
+.ledger-row {
+  display: grid;
+  grid-template-columns: 35px minmax(0, 1fr) 115px 120px 20px;
+  align-items: center;
+  gap: 17px;
+  width: 100%;
+  padding: 20px 28px;
+  text-align: left;
+  border-radius: 0 !important;
+  border-bottom: 1px solid var(--border) !important;
+  background: transparent;
+  font-weight: 400;
+}
+.ledger-row:hover {
+  background: #e9ecdf;
+}
+.ledger-number {
+  font-size: 10px;
+  color: #8a947e;
+}
+.ledger-name strong {
+  font-size: 12px;
+  font-weight: 500;
+  display: block;
+  overflow-wrap: anywhere;
+}
+.ledger-name small {
+  font-size: 9px;
+  color: var(--muted);
+  display: block;
+  margin-top: 6px;
+}
+.ledger-received,
+.ledger-result {
+  text-align: right;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+.ledger-received small,
+.ledger-result small {
+  display: block;
+  font-size: 8px;
+  color: var(--muted);
+  margin-bottom: 5px;
+}
+.ledger-result {
+  color: var(--forest);
+}
+.ledger-arrow {
+  color: var(--muted);
+  text-align: right;
+}
+.ledger-pagination {
+  display: flex;
+  justify-content: center;
+  gap: 25px;
+  align-items: center;
+  padding: 22px;
+  font-size: 11px;
+  color: var(--muted);
+}
+.ledger-pagination button {
+  padding: 9px 13px;
+  background: #efeee5;
+  color: var(--forest);
+  font-size: 10px !important;
+}
+.ledger-empty {
+  text-align: center;
+  padding: 40px 20px;
+}
+.ledger-empty > span {
+  font: 40px Georgia;
+  color: #aeb69e;
+}
+.ledger-empty h3 {
+  font:
+    28px Georgia,
+    serif;
+  margin: 12px 0;
+}
+.ledger-empty p {
+  font-size: 11px;
+  color: var(--muted);
+  max-width: 400px;
+  margin: 0 auto 20px;
+  line-height: 1.8;
+}
+.ledger-empty button {
+  background: var(--forest);
+  color: var(--cream);
+  padding: 12px 20px;
+}
+.ledger-detail {
+  padding: 38px;
+  width: min(600px, calc(100vw - 28px));
+  background: var(--paper);
+}
+.ledger-detail h2 {
+  font:
+    34px/1.12 Georgia,
+    serif;
+  margin: 25px 0 12px;
+  overflow-wrap: anywhere;
+}
+.ledger-date {
+  font-size: 11px;
+  color: var(--muted);
+  margin-bottom: 25px;
+}
+.ledger-detail .ledger-accounting {
+  margin: 20px 0;
+}
+.ledger-detail .ledger-total {
+  border-top: 1px solid var(--border);
+  padding-top: 18px;
+  margin-top: 18px;
+}
+.sales-inbox {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 25px;
+  padding: 25px 28px;
+  background: #e9eddf;
+  border: 1px solid #d5deca;
+  border-radius: 10px;
+  margin: 0 0 24px;
+}
+.sales-inbox h2 {
+  font:
+    30px Georgia,
+    serif;
+  margin: 10px 0;
+}
+.sales-inbox p {
+  font-size: 11px;
+  color: var(--muted);
+  margin: 0;
+  line-height: 1.7;
+}
+.inbox-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  flex-shrink: 0;
+}
+.inbox-actions label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+}
+.inbox-actions input {
+  accent-color: var(--forest);
+}
+.inbox-actions button {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  background: var(--forest);
+  color: var(--cream);
+  padding: 11px 16px;
+  font-size: 10px !important;
+}
+#inbox-empty {
+  padding: 25px;
+  border: 1px dashed var(--border);
+  font-size: 12px;
+  color: var(--muted);
+}
+#sellingItems > [hidden],
+#inbox-empty[hidden] {
+  display: none !important;
+}
+@media (max-width: 1100px) {
+  .ledger-tools {
+    grid-template-columns: 1fr 1fr;
+  }
+  .ledger-summary {
+    grid-template-columns: 1fr 1fr;
+    gap: 22px;
+  }
+  .ledger-row {
+    grid-template-columns: 25px minmax(0, 1fr) 100px;
+    gap: 13px;
+  }
+  .ledger-received,
+  .ledger-arrow {
+    display: none;
+  }
+  .sales-inbox {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .inbox-actions {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+}
+@media (max-width: 600px) {
+  .ledger-cover {
+    padding: 27px 22px;
+  }
+  .ledger-cover h2 {
+    font-size: 33px;
+  }
+  .ledger-seal {
+    display: none;
+  }
+  .ledger-tools {
+    padding: 22px 18px;
+    gap: 15px 10px;
+  }
+  .ledger-summary {
+    margin: 0 18px;
+  }
+  .ledger-summary strong {
+    font-size: 25px;
+  }
+  .ledger-accounting {
+    margin: 15px 18px 22px;
+  }
+  .ledger-list-head {
+    padding: 13px 18px;
+    letter-spacing: 0.7px;
+  }
+  .ledger-list-head > span {
+    font-size: 7px;
+  }
+  .ledger-list-head button {
+    font-size: 9px !important;
+  }
+  .ledger-row {
+    padding: 18px;
+    grid-template-columns: minmax(0, 1fr) 88px;
+    gap: 12px;
+  }
+  .ledger-number {
+    display: none;
+  }
+  .ledger-result {
+    font-size: 12px;
+  }
+  .ledger-name strong {
+    font-size: 11px;
+  }
+  .ledger-detail {
+    padding: 30px 22px;
+  }
+  .ledger-detail h2 {
+    font-size: 28px;
+  }
+  .ledger-detail dd {
+    font-size: 17px;
+  }
+  .ledger-detail dt {
+    font-size: 10px;
+  }
+  .sales-inbox {
+    padding: 22px;
+  }
+  .sales-inbox h2 {
+    font-size: 27px;
+  }
+}
+.sale-lot:focus {
+  outline: 2px solid #b18b51;
+  outline-offset: 5px;
+}
+@media (min-width: 1200px) {
+  #content-stats > .grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}

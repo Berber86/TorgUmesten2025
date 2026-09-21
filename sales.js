@@ -168,8 +168,17 @@ function renderSellModal() {
         function selectAvitoSale() {
             const item = currentSell;
             const playerPriceInput = document.getElementById('avitoPrice').value;
-            const playerPrice = parseInt(playerPriceInput) || (item.estimatedValue || item.realValue);
+            const playerPrice = Number(playerPriceInput);
+            if (!Number.isSafeInteger(playerPrice) || playerPrice <= 0) {
+                showNotification('Укажите положительную целую цену продажи.', 'warning');
+                document.getElementById('avitoPrice').focus();
+                return;
+            }
             const sellAsFake = document.getElementById('sellAsFake') ? document.getElementById('sellAsFake').checked : false;
+            if (!Number.isSafeInteger(sellAsFake ? playerPrice * 10 : playerPrice)) {
+                showNotification('Цена слишком велика. Укажите меньшее число.', 'warning');
+                return;
+            }
             const tax = item.avitoRepost ? 1000 : 0;
 
             if (gameState.money < tax) {
@@ -564,6 +573,8 @@ function processSales() {
         function logDeal(item, salePrice, channel) {
             const skill = gameState.skills[item.category] || 0;
             gameState.dealsLog.push({
+                day: gameState.day,
+                category: item.category,
                 displayName: getDisplayName(item, 0),
                 trueName: getTrueName(item),
                 sellerPrice: item.askingPrice,

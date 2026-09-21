@@ -1,4 +1,9 @@
+        let dayTransitionPending = false;
         function nextDay() {
+          if (dayTransitionPending || (typeof currentHaggle !== 'undefined' && currentHaggle)) return;
+          saveGame(); // checkpoint before the asynchronous day transaction
+          const previousDaySnapshot = { day: gameState.day, money: gameState.money, attention: gameState.attention, sold: gameState.stats.sold };
+
           // Получаем кнопку (с защитой от ошибок)
           const button = document.getElementById('nextDayBtn');
           
@@ -44,6 +49,7 @@
             button.textContent = '⏳ Переход...';
           }
           
+          dayTransitionPending = true;
           gameState.money -= 500;
           gameState.day++;
           
@@ -56,65 +62,70 @@
           // 3. РАСЧЕТЫ НОВОГО ДНЯ (С ЗАДЕРЖКОЙ)
           // =======================================================
           setTimeout(() => {
-            // --- РАСЧЕТ ЭНЕРГИИ (ИСПРАВЛЕННЫЙ) ---
+            try {
+              // --- РАСЧЕТ ЭНЕРГИИ (ИСПРАВЛЕННЫЙ) ---
             
-            // 1. Получаем уровень (гарантированно число)
-            // 1. Получаем уровень (ИСПРАВЛЕНО)
-            let level = 0;
-            // Мы проверяем переменную gameState напрямую, а не через window
-            if (typeof gameState !== 'undefined' && typeof gameState.officeLevel !== 'undefined') {
-              level = Number(gameState.officeLevel);
-            }
-            
-            // 2. Ищем конфиг
-            const configMap = window.OFFICE_CONFIG || OFFICE_CONFIG;
-            let energyMod = 0;
-            
-            if (configMap) {
-              // Ключи объекта - строки, поэтому преобразуем уровень в строку
-              const config = configMap[String(level)];
-              if (config) {
-                energyMod = config.energyMod;
-              } else {
-                console.warn(`⚠️ Нет конфига для уровня ${level}, используем 0`);
+              // 1. Получаем уровень (гарантированно число)
+              // 1. Получаем уровень (ИСПРАВЛЕНО)
+              let level = 0;
+              // Мы проверяем переменную gameState напрямую, а не через window
+              if (typeof gameState !== 'undefined' && typeof gameState.officeLevel !== 'undefined') {
+                level = Number(gameState.officeLevel);
               }
-            }
             
-            // 3. Считаем итог (База 100 + Модификатор)
-            const newAttention = Math.max(10, 100 + energyMod);
+              // 2. Ищем конфиг
+              const configMap = window.OFFICE_CONFIG || OFFICE_CONFIG;
+              let energyMod = 0;
             
-            console.log(`⚡ ЭНЕРГИЯ: Уровень ${level}. Модификатор ${energyMod}. Итог: ${newAttention}`);
+              if (configMap) {
+                // Ключи объекта - строки, поэтому преобразуем уровень в строку
+                const config = configMap[String(level)];
+                if (config) {
+                  energyMod = config.energyMod;
+                } else {
+                  console.warn(`⚠️ Нет конфига для уровня ${level}, используем 0`);
+                }
+              }
             
-            // 4. Применяем
-            gameState.attention = newAttention;
+              // 3. Считаем итог (База 100 + Модификатор)
+              const newAttention = Math.max(10, 100 + energyMod);
             
-            // --- ОСТАЛЬНЫЕ ПРОЦЕССЫ ---
-            gameState.eventCounter++;
-            gameState.firstDealToday = true;
+              console.log(`⚡ ЭНЕРГИЯ: Уровень ${level}. Модификатор ${energyMod}. Итог: ${newAttention}`);
             
-            if (typeof restoreExpertiseCosts === 'function') restoreExpertiseCosts();
-            if (typeof processSales === 'function') processSales();
+              // 4. Применяем
+              gameState.attention = newAttention;
             
-            if (gameState.eventCounter >= 3 && Math.random() < 0.3) {
-              // if (typeof triggerRandomEvent === 'function') triggerRandomEvent();
-              gameState.eventCounter = 0;
-            }
+              // --- ОСТАЛЬНЫЕ ПРОЦЕССЫ ---
+              gameState.eventCounter++;
+              gameState.firstDealToday = true;
             
-            if (typeof generateMarket === 'function') generateMarket();
+              if (typeof restoreExpertiseCosts === 'function') restoreExpertiseCosts();
+              if (typeof processSales === 'function') processSales();
             
-            // Обновляем визуал стола
-            if (typeof updateOfficeVisuals === 'function') updateOfficeVisuals();
+              if (gameState.eventCounter >= 3 && Math.random() < 0.3) {
+                // if (typeof triggerRandomEvent === 'function') triggerRandomEvent();
+                gameState.eventCounter = 0;
+              }
             
-            // Обновляем весь UI (важно вызвать ПОСЛЕ изменения энергии)
-            if (typeof updateDisplay === 'function') updateDisplay();
+              if (typeof generateMarket === 'function') generateMarket();
             
-            // Сохраняем прогресс
-            if (typeof saveGame === 'function') saveGame();
+              // Обновляем визуал стола
+              if (typeof updateOfficeVisuals === 'function') updateOfficeVisuals();
             
-            // Разблокируем кнопку
-            if (button) {
-              button.disabled = false;
-              button.innerHTML = 'Следующий день <span>↗</span><small>Аренда: 500 ₽</small>';
+              // Обновляем весь UI (важно вызвать ПОСЛЕ изменения энергии)
+              if (typeof updateDisplay === 'function') updateDisplay();
+            
+              // Сохраняем прогресс
+              if (typeof saveGame === 'function') saveGame({force:true});
+            
+              document.dispatchEvent(new CustomEvent('torg:day-complete', {detail:previousDaySnapshot}));
+            } finally {
+              dayTransitionPending = false;
+              // Разблокируем кнопку
+              if (button) {
+                button.disabled = false;
+                button.innerHTML = 'Следующий день <span>↗</span><small>Аренда: 500 ₽</small>';
+              }
             }
           }, 100);
         }
@@ -240,8 +251,8 @@ function loadGame() {
       console.log("Обновление интерфейса...");
       updateDisplay();
       
-      // Генерируем рынок если пустой
-      if (gameState.marketItems.length === 0) {
+      // Старые сохранения без рынка мигрируем; намеренно пустой рынок сохраняем.
+      if (!Array.isArray(JSON.parse(saved).marketItems)) {
         console.log("Генерация нового рынка...");
         generateMarket();
       }
@@ -308,8 +319,8 @@ function initGame() {
     const authenticityGuess = document.getElementById('authenticityGuess').value;
     const valueGuessInput = document.getElementById('valueGuess').value;
     const ageGuessInput = document.getElementById('ageGuess').value;
-    const valueGuess = parseInt(valueGuessInput) || 0;
-    const ageGuess = parseInt(ageGuessInput) || 0;
+    const valueGuess = Number(valueGuessInput);
+    const ageGuess = Number(ageGuessInput);
 
     // Проверяем, что все поля заполнены
     if (!authenticityGuess || valueGuessInput === '' || ageGuessInput === '') {
@@ -317,8 +328,8 @@ function initGame() {
         return;
     }
 
-    if (valueGuess === 0 || ageGuess === 0) {
-        showNotification('Стоимость и возраст должны быть больше 0!', 'warning');
+    if (!Number.isSafeInteger(valueGuess) || !Number.isSafeInteger(ageGuess) || valueGuess <= 0 || ageGuess <= 0) {
+        showNotification('Стоимость и возраст должны быть положительными целыми числами!', 'warning');
         return;
     }
 

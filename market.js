@@ -548,6 +548,7 @@ function updateMarketScale() {
         // СИСТЕМА ТОРГА
         // ==============================================
  function startHaggle(itemId) {
+    if (currentHaggle || dayTransitionPending) return;
     // ПРОВЕРКА ВНИМАНИЯ ПЕРЕД ВХОДОМ В ТОРГ
     if (gameState.attention < ATTENTION_COSTS.ENTER_HAGGLE) {
         showNotification("на сегодня хватит. вы устали", 'error');
@@ -571,7 +572,7 @@ function updateMarketScale() {
                 if (otherItems.length > 0) {
                     const randomItem = otherItems[Math.floor(Math.random() * otherItems.length)];
                     gameState.marketItems = gameState.marketItems.filter(i => i.id !== randomItem.id);
-                    //showNotification(`🏪 Другой покупатель забрал ${getDisplayName(randomItem, 0)}`, 'info');
+                    showNotification(`Другой покупатель забрал: ${getDisplayName(randomItem, 0)}`, 'info');
                 }
             }
             
@@ -585,16 +586,20 @@ function updateMarketScale() {
                 initialQuote = item.sellerQuotes.greeting;
             }
             
+            const paused = item.haggleState;
             currentHaggle = {
                 item,
-                currentPrice: item.askingPrice,
-                patience: item.sellerPortrait.patience,
-                maxPatience: item.sellerPortrait.patience,
-                usedTactics: [],
-                competitors: gameState.firstDealToday ? [] : generateCompetitors(),
-                currentQuote: initialQuote
+                currentPrice: paused ? paused.currentPrice : item.askingPrice,
+                patience: paused ? paused.patience : item.sellerPortrait.patience,
+                maxPatience: paused ? paused.maxPatience : item.sellerPortrait.patience,
+                usedTactics: paused ? [...paused.usedTactics] : [],
+                competitors: paused ? paused.competitors.map(c => ({...c})) : (gameState.firstDealToday ? [] : generateCompetitors()),
+                currentQuote: paused ? paused.currentQuote : initialQuote
             };
-            
+            gameState.firstDealToday = false;
+            if (typeof saveHaggleProgress === 'function') saveHaggleProgress();
+            saveGame();
+
             document.getElementById('haggleModal').classList.remove('hidden');
             renderHaggleModal();
         }
@@ -761,13 +766,17 @@ function renderHaggleProgress() {
 
     function useTactic(tacticId) {
     const h = currentHaggle;
+    if (!h || h.finished || h.purchaseCompleted || h.usedTactics.includes(tacticId)) return;
+    const tactic = tactics.find(t => t.id === tacticId);
+    const skill = gameState.skills[h.item.category] || 0;
+    const unlocked = tacticId === 'expert_talk' ? skill >= 7 : gameState.unlockedTactics.includes(tacticId);
+    if (!tactic || !unlocked || tactic.reqSkill > skill) return;
     const portrait = h.item.sellerPortrait;
     h.usedTactics.push(tacticId);
     
     // Обработка критической неудачи
     if (portrait.critical === tacticId) {
-        const realMoney = gameState.money;
-        gameState.money = 1; // Временный 1 рубль
+        h.finished = true;
         
         const criticalQuoteKey = `failure_${tacticId}_critical`;
         if (h.item.sellerQuotes[criticalQuoteKey]) {
@@ -783,7 +792,7 @@ function renderHaggleProgress() {
         renderHaggleModal();
         
         setTimeout(() => {
-            gameState.money = realMoney;
+            if (currentHaggle !== h) return;
             closeHaggle();
             renderMarket();
         }, 2000);
@@ -851,8 +860,7 @@ function renderHaggleProgress() {
             showNotification(`❌ Не сработало! Терпение продавца: ${h.patience}/${h.maxPatience}`, 'warning');
             
             if (h.patience <= 0) {
-                const realMoney = gameState.money;
-                gameState.money = 1;
+                h.finished = true;
                 
                 h.currentQuote = "Хватит! Я больше не хочу с вами разговаривать!";
                 showNotification(`😠 Продавец потерял терпение и ушел!`, 'error');
@@ -861,7 +869,7 @@ function renderHaggleProgress() {
                 renderHaggleModal();
                 
                 setTimeout(() => {
-                    gameState.money = realMoney;
+                    if (currentHaggle !== h) return;
                     closeHaggle();
                     renderMarket();
                 }, 2000);
@@ -906,6 +914,7 @@ function renderHaggleProgress() {
         // Проверка перехвата конкурентом
         const interceptor = checkCompetitorInterception(h);
         if (interceptor) {
+            h.finished = true;
             const discountPercent = ((h.item.askingPrice - h.currentPrice) / h.item.askingPrice) * 100;
             h.currentQuote = `Извините, но ${interceptor.name} только что предложил лучшую цену!`;
             showNotification(`😤 ${interceptor.name} перехватил товар! Скидка была ${discountPercent.toFixed(0)}%`, 'error');
@@ -913,6 +922,7 @@ function renderHaggleProgress() {
             
             renderHaggleModal();
             setTimeout(() => {
+                if (currentHaggle !== h) return;
                 closeHaggle();
                 renderMarket();
             }, 2000);
@@ -924,8 +934,7 @@ function renderHaggleProgress() {
         
         // Проверка на потерю терпения (только после неудачи)
         if (h.patience <= 0) {
-            const realMoney = gameState.money;
-            gameState.money = 1;
+            h.finished = true;
             
             h.currentQuote = "Хватит! Я больше не хочу с вами разговаривать!";
             showNotification(`😠 Продавец потерял терпение и ушел!`, 'error');
@@ -934,7 +943,7 @@ function renderHaggleProgress() {
             renderHaggleModal();
             
             setTimeout(() => {
-                gameState.money = realMoney;
+                if (currentHaggle !== h) return;
                 closeHaggle();
                 renderMarket();
             }, 2000);
@@ -954,16 +963,16 @@ function renderHaggleProgress() {
 
 function acceptCurrentPrice() {
     const h = currentHaggle;
-    if (!h || h.purchaseCompleted) return;
+    if (!h || h.finished || h.purchaseCompleted || !gameState.marketItems.some(i => i.id === h.item.id)) return;
     
+    if (!Number.isSafeInteger(h.currentPrice) || h.currentPrice <= 0) return;
     if (gameState.money < h.currentPrice) {
         showNotification('Недостаточно денег!', 'error');
         return;
     }
     
-    // Сохраняем реальные деньги и временно устанавливаем 1 рубль
+    // Purchase is committed immediately; the closing quote is presentation only.
     const realMoney = gameState.money;
-    gameState.money = 1;
     
     // Помечаем покупку как завершенную
     h.purchaseCompleted = true;
@@ -1007,18 +1016,23 @@ function acceptCurrentPrice() {
         gameState.money = expectedMoney; // Принудительно исправляем
     }
     
+    gameState.marketItems = gameState.marketItems.filter(i => i.id !== h.item.id);
+    gameState.firstDealToday = false;
+    updateDisplay();
+    saveGame();
+
     // Показываем реплику продавца и закрываем окно
     if (h.item.sellerQuotes.win) {
         h.currentQuote = h.item.sellerQuotes.win;
         renderHaggleModal();
         
         setTimeout(() => {
+            if (currentHaggle !== h) return;
             closeHaggle();
             updateDisplay();
             updateWalkingCounters();
             renderMarket();
             saveGame();
-            gameState.firstDealToday = false;
         }, 3000);
     } else {
         showNotification(`✅ Куплено за ${formatMoney(h.currentPrice)}!`, 'success');
@@ -1027,22 +1041,21 @@ function acceptCurrentPrice() {
         updateWalkingCounters();
         renderMarket();
         saveGame();
-        gameState.firstDealToday = false;
     }
 }
 
 
 function closeHaggle() {
-            if (currentHaggle && currentHaggle.item) {
-                gameState.marketItems = gameState.marketItems.filter(i => i.id !== currentHaggle.item.id);
-                renderMarket();
-            }
-            document.getElementById('haggleModal').classList.add('hidden');
-            currentHaggle = null;
-            gameState.firstDealToday = false;
-        }
-        
-        
+    if (typeof saveHaggleProgress === 'function') saveHaggleProgress();
+    document.getElementById('haggleModal').classList.add('hidden');
+    currentHaggle = null;
+    gameState.firstDealToday = false;
+    renderMarket();
+    updateDisplay();
+    saveGame();
+}
+
+
         function generateCompetitors() {
     const count = Math.floor(Math.random() * 3) + 1; // 1-3 конкурента
     const competitors = [];

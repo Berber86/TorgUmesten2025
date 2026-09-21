@@ -444,12 +444,12 @@
   haggleTop.prepend(haggleArt);
   const leave = haggle.querySelector('[onclick="closeHaggle()"]');
   if (leave) {
-    leave.textContent = "Уйти";
-    leave.title = "Предмет исчезнет с рынка — это правило игры.";
+    leave.textContent = "Пауза";
+    leave.title = "Цена, терпение и использованные приёмы сохранятся. Возврат стоит 5 ед. внимания.";
   }
   const tradeWarning = document.createElement("p");
   tradeWarning.className = "trade-warning";
-  tradeWarning.textContent = "Если уйти, это предложение исчезнет с рынка.";
+  tradeWarning.textContent = "Пауза сохранит переговоры. Возврат: 5 ед. внимания. Новый день обновит рынок.";
   haggle.append(tradeWarning);
   new MutationObserver(() => {
     if (!$("haggleModal").classList.contains("hidden") && currentHaggle) {
@@ -562,7 +562,7 @@
   };
   const helpTips = document.createElement("section");
   helpTips.className = "help-quickstart";
-  helpTips.innerHTML = `<div class="eyebrow">КОРОТКО О ГЛАВНОМ</div><h2>Осмотритесь. Остальное придёт с опытом.</h2><div><p><strong>01 / Сравните предложения</strong>Предпросмотр бесплатный. Вход в торг расходует внимание.</p><p><strong>02 / Исследуйте покупку</strong>Подлинность и ценность выясняются на экспертизе, а не по иллюстрации.</p><p><strong>03 / Не теряйте находки</strong>Избранное — это заметки, не резерв. Если уйти из торга, вещь исчезнет.</p></div><small>Быстрый поиск на компьютере: клавиша / · На телефоне разделы всегда доступны в нижнем меню.</small>`;
+  helpTips.innerHTML = `<div class="eyebrow">КОРОТКО О ГЛАВНОМ</div><h2>Осмотритесь. Остальное придёт с опытом.</h2><div><p><strong>01 / Сравните предложения</strong>Предпросмотр бесплатный. Вход в торг расходует внимание.</p><p><strong>02 / Исследуйте покупку</strong>Подлинность и ценность выясняются на экспертизе, а не по иллюстрации.</p><p><strong>03 / Не теряйте находки</strong>Переговоры можно поставить на паузу. Цена и использованные приёмы сохранятся; возврат стоит 5 ед. внимания.</p></div><small>Быстрый поиск на компьютере: клавиша / · На телефоне разделы всегда доступны в нижнем меню.</small>`;
   $("content-help").prepend(helpTips);
   // On phones, show a slim resource bar only after the main indicators scroll away.
   const compact = document.createElement("div");
