@@ -314,38 +314,29 @@ function generateMarket() {
     document.getElementById('marketDay').textContent = gameState.day;
 
     if (gameState.marketItems.length === 0) {
-        container.innerHTML = '<div class="col-span-4 text-center text-gray-500 py-12">Все товары разобрали! Переходите к следующему дню.</div>';
+        container.innerHTML = '<div class="market-empty"><h3>Все находки разобрали</h3><p>Загляните на рынок на следующий день.</p></div>';
+        const count = document.getElementById('market-count'); if (count) count.textContent = '0';
         return;
     }
 
-    container.innerHTML = gameState.marketItems.map(item => {
+    const filters = typeof marketFilters === 'undefined' ? { category: 'all', query: '', sort: 'default' } : marketFilters;
+    let items = gameState.marketItems.filter(item => (filters.category === 'all' || item.category === filters.category) && (getDisplayName(item, 0) + ' ' + item.sellerName).toLowerCase().includes(filters.query));
+    if (filters.sort !== 'default') items = [...items].sort((a,b) => filters.sort === 'low' ? a.askingPrice - b.askingPrice : b.askingPrice - a.askingPrice);
+    const count = document.getElementById('market-count');
+    if (count) count.textContent = items.length;
+    container.innerHTML = items.length ? items.map((item, index) => {
         const displayName = getDisplayName(item, 0);
         const itemIcon = DETAILED_ICONS[item.baseName] || CATEGORY_ICONS[item.category];
-        
+        const category = typeof marketCategoryNames !== 'undefined' ? marketCategoryNames[item.category] : item.category;
         let visibleInfo = '';
-        if (gameState.skills[item.category] >= 1 && item.defects.length > 0) {
-            visibleInfo += `<div class="text-xs text-orange-600">⚠️ Видны дефекты</div>`;
-        }
-        if (gameState.skills[item.category] >= 2 && item.marks.length > 0) {
-            visibleInfo += `<div class="text-xs text-blue-600">🏷️ Видны клейма</div>`;
-        }
+        if (gameState.skills[item.category] >= 1 && item.defects.length > 0) visibleInfo += '<span>Видны дефекты</span>';
+        if (gameState.skills[item.category] >= 2 && item.marks.length > 0) visibleInfo += '<span>Видны клейма</span>';
+        return `<article class="lot-card">
+            <div class="lot-visual category-${item.category}"><span class="lot-category">${category}</span><span class="lot-number">№ ${String(index + 1).padStart(2, '0')}</span><span class="lot-object">${itemIcon}</span><span class="lot-visual-caption">ИЗ ЧАСТНОЙ КОЛЛЕКЦИИ</span></div>
+            <div class="lot-details"><h3>${displayName}</h3><div class="lot-seller"><span>${item.sellerIcon}</span>${item.sellerName}</div><div class="lot-clues">${visibleInfo}</div><div class="lot-bottom"><div><small>Цена продавца</small><strong>${formatMoney(item.askingPrice)}</strong></div><button onclick="startHaggle('${item.id}')" aria-label="Торговаться: ${displayName}">Торговаться <span>↗</span></button></div></div>
+        </article>`;
+    }).join('') : '<div class="market-empty"><span>⌕</span><h3>Пока ничего не нашлось</h3><p>Попробуйте другую категорию или измените запрос.</p></div>';
 
-        return `
-            <div class="card rounded-lg shadow-lg p-4 cursor-pointer hover:shadow-xl" onclick="startHaggle('${item.id}')">
-                <div class="text-5xl mb-2 text-center">${itemIcon}</div>
-                <h3 class="font-bold mb-2 text-center text-sm">${displayName}</h3>
-                <div class="text-xs text-gray-600 text-center mb-2 flex items-center justify-center gap-1">
-                    <span>${item.sellerIcon}</span>
-                    <span>${item.sellerName}</span>
-                </div>
-                ${visibleInfo}
-                <div class="text-2xl font-bold text-center text-green-600 mt-2">${formatMoney(item.askingPrice)}</div>
-                <button class="w-full mt-3 bg-gradient-to-r from-blue-500 to-indigo-600 text-white py-2 rounded-lg font-semibold hover:shadow-lg transition">
-                    💬 Торговаться
-                </button>
-            </div>
-        `;
-    }).join('');
 }
 
 // ============================================
