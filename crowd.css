@@ -1,0 +1,108 @@
+/* ============================================================
+   ТОЛПА У ПРИЛАВКА — конкуренты в сцене торга.
+   Фигуры в стиле портретов продавцов, но со спины или в профиль
+   и чуть ближе к зрителю: они крупнее продавца, а нижняя кромка
+   кадра срезает их, как у стоящих между камерой и прилавком.
+   ============================================================ */
+
+#haggleModal .seller-conversation {
+  grid-template-columns: 148px minmax(0, 1fr);
+}
+#haggleModal .seller-visual {
+  height: 176px;
+}
+
+/* Слой поверх портрета продавца: повторяет его геометрию (задаётся из crowd.js) */
+#haggleModal .crowd-layer {
+  position: absolute;
+  z-index: 3;
+  overflow: hidden;
+  border-radius: 7px;
+  pointer-events: none;
+  background: linear-gradient(
+    180deg,
+    rgba(233, 237, 221, 0) 0%,
+    rgba(122, 131, 102, 0.12) 78%,
+    rgba(84, 92, 68, 0.26) 100%
+  );
+}
+
+#haggleModal .crowd-figure {
+  position: absolute;
+  bottom: -11%; /* ступни за кромкой кадра — фигура ближе к зрителю, чем продавец */
+  transform: translateX(-50%);
+  pointer-events: auto;
+  filter: saturate(0.85) brightness(0.97) drop-shadow(0 5px 6px rgba(30, 35, 22, 0.35));
+  transition: transform 0.25s ease, filter 0.25s ease;
+}
+#haggleModal .crowd-figure img {
+  display: block;
+  height: 100%;
+  width: auto;
+  image-rendering: pixelated;
+}
+#haggleModal .crowd-figure.flipped img {
+  transform: scaleX(-1);
+}
+
+/* Именная бирка: по наведению и при перехвате товара */
+#haggleModal .crowd-tag {
+  position: absolute;
+  left: 50%;
+  top: 12%;
+  transform: translateX(-50%);
+  background: #fafbedf0;
+  border: 1px solid #d5ddc4;
+  color: #5f6f47;
+  border-radius: 4px;
+  font-size: 9px;
+  line-height: 1.25;
+  padding: 3px 6px;
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  pointer-events: none;
+}
+#haggleModal .crowd-figure:hover .crowd-tag,
+#haggleModal .crowd-figure.intercepting .crowd-tag {
+  opacity: 1;
+}
+#haggleModal .crowd-figure.tier-mid .crowd-tag {
+  border-color: #d8c39a;
+  color: #7d6537;
+}
+#haggleModal .crowd-figure.tier-high .crowd-tag {
+  border-color: #d3a08f;
+  color: #8c4632;
+  background: #f8ece7f0;
+}
+
+/* Перехват: конкурент подаётся вперёд, к прилавку */
+#haggleModal .crowd-figure.intercepting {
+  transform: translateX(-50%) translateY(-5%) scale(1.07);
+  filter: saturate(0.95) drop-shadow(0 8px 9px rgba(70, 25, 12, 0.45));
+}
+
+/* Точки угрозы в текстовом списке конкурентов */
+.crowd-dot {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  margin-right: 4px;
+  background: #9bad72;
+  vertical-align: 1px;
+}
+.crowd-dot.tier-mid { background: #d2a54c; }
+.crowd-dot.tier-high { background: #c2593d; }
+
+@media (prefers-reduced-motion: reduce) {
+  #haggleModal .crowd-figure { transition: none; }
+}
+
+@media (max-width: 700px) {
+  #haggleModal .seller-conversation {
+    grid-template-columns: 96px minmax(0, 1fr);
+  }
+  #haggleModal .seller-visual { height: 132px; }
+}
