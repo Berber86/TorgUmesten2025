@@ -220,29 +220,20 @@ function handleWalkingMarketClick(itemId) {
     const itemIcon = DETAILED_ICONS[item.baseName] || CATEGORY_ICONS[item.category] || '❓';
     
     const previewModalHTML = `
-        <div id="walking-preview-modal" class="fixed inset-0 modal-backdrop flex items-center justify-center z-50">
-            <div class="bg-white rounded-lg shadow-2xl p-2 mx-4 max-w-sm w-full">
-                <div class="text-center">
-                    <div class="text-6xl mb-4">${itemIcon}</div>
-                    <h2 class="text-xl font-bold mb-2">${displayName}</h2>
-                    <div class="text-lg text-gray-600 mb-4">💰 Цена: ${formatMoney(item.askingPrice)}р</div>
-                    
-                    <div class="mb-4">
-                        ${skill >= 1 && item.defects.length > 0 ? 
-                            `<div class="text-xs text-orange-600 mb-1">⚠️ Видны дефекты</div>` : ''}
-                        ${skill >= 2 && item.marks.length > 0 ? 
-                            `<div class="text-xs text-blue-600 mb-1">🏷️ Видны клейма</div>` : ''}
+        <div id="walking-preview-modal" class="modal-backdrop" style="position:fixed;inset:0;display:grid;place-items:center;z-index:120">
+            <div class="modal-card small-card" style="max-width:380px;padding:20px">
+                <div class="center stack">
+                    <div class="big-ico">${itemIcon}</div>
+                    <div class="eyebrow small">${item.category}</div>
+                    <div class="h3" style="text-align:center">${displayName}</div>
+                    <div class="mono" style="font-size:20px;font-weight:900">${formatMoney(item.askingPrice)}</div>
+                    <div class="stack" style="margin-top:8px;width:100%">
+                        ${skill >= 1 && item.defects.length > 0 ? `<div class="status-chip bad" style="margin:0 auto">⚠ видны дефекты</div>` : ''}
+                        ${skill >= 2 && item.marks.length > 0 ? `<div class="status-chip blue" style="margin:0 auto">◍ видны клейма</div>` : ''}
                     </div>
-                    
-                    <div class="flex gap-3">
-                        <button onclick="closeWalkingPreview()" 
-                                class="flex-1 bg-gray-500 hover:bg-gray-600 text-white py-3 rounded-lg font-semibold">
-                            Закрыть
-                        </button>
-                        <button onclick="startHaggleFromWalkingPreview('${itemId}')" 
-                                class="flex-1 bg-gradient-to-r from-blue-500 to-indigo-600 text-white py-3 rounded-lg font-semibold hover:shadow-lg transition">
-                            💬 Торговаться
-                        </button>
+                    <div class="row gap" style="width:100%;margin-top:14px">
+                        <button onclick="closeWalkingPreview()" class="btn ghost" style="flex:1">Закрыть</button>
+                        <button onclick="startHaggleFromWalkingPreview('${itemId}')" class="btn primary" style="flex:1">Торговаться →</button>
                     </div>
                 </div>
             </div>
@@ -306,43 +297,47 @@ function generateMarket() {
     renderMarket();
 }
            function renderMarket() {
-    // Если активен новый вид рынка, не обновляем традиционный
-    if (currentMarketView === 'walking') {
-        return;
-    }
+    if (currentMarketView === 'walking') return;
     const container = document.getElementById('marketItems');
-    document.getElementById('marketDay').textContent = gameState.day;
+    const dayEl = document.getElementById('marketDay');
+    if(dayEl) dayEl.textContent = gameState.day;
 
     if (gameState.marketItems.length === 0) {
-        container.innerHTML = '<div class="col-span-4 text-center text-gray-500 py-12">Все товары разобрали! Переходите к следующему дню.</div>';
+        container.innerHTML = '<div class="empty-state"><div class="empty-ico">◫</div><div class="empty-title">Все разобрали</div><div class="empty-sub">Переходи к следующему дню — появятся новые лоты</div></div>';
         return;
     }
 
     container.innerHTML = gameState.marketItems.map(item => {
         const displayName = getDisplayName(item, 0);
-        const itemIcon = DETAILED_ICONS[item.baseName] || CATEGORY_ICONS[item.category];
-        
+        const itemIcon = DETAILED_ICONS[item.baseName] || CATEGORY_ICONS[item.category] || '◫';
+        const catLabel = item.category;
+        const defectsHint = gameState.skills[item.category] >= 1 && item.defects.length > 0;
+        const marksHint = gameState.skills[item.category] >= 2 && item.marks.length > 0;
         let visibleInfo = '';
-        if (gameState.skills[item.category] >= 1 && item.defects.length > 0) {
-            visibleInfo += `<div class="text-xs text-orange-600">⚠️ Видны дефекты</div>`;
-        }
-        if (gameState.skills[item.category] >= 2 && item.marks.length > 0) {
-            visibleInfo += `<div class="text-xs text-blue-600">🏷️ Видны клейма</div>`;
+        if(defectsHint || marksHint){
+            visibleInfo = '<div class="baza-card-hints" style="display:flex;gap:6px;margin-top:6px;flex-wrap:wrap">'+
+                (defectsHint ? '<span class="hint defect" style="font-size:10px;font-family:var(--font-mono);background:#fff7e6;border:1px solid #e6b85c;color:#8a5a00;padding:3px 7px;border-radius:999px">⚠ дефекты</span>':'')+
+                (marksHint ? '<span class="hint mark" style="font-size:10px;font-family:var(--font-mono);background:#eef2ff;border:1px solid #b8c1ff;color:#2a3a9a;padding:3px 7px;border-radius:999px">◍ клейма</span>':'')+
+            '</div>';
         }
 
         return `
-            <div class="card rounded-lg shadow-lg p-4 cursor-pointer hover:shadow-xl" onclick="startHaggle('${item.id}')">
-                <div class="text-5xl mb-2 text-center">${itemIcon}</div>
-                <h3 class="font-bold mb-2 text-center text-sm">${displayName}</h3>
-                <div class="text-xs text-gray-600 text-center mb-2 flex items-center justify-center gap-1">
-                    <span>${item.sellerIcon}</span>
-                    <span>${item.sellerName}</span>
+            <div class="baza-card">
+                <div class="baza-card-media">
+                    <div class="media-sticker">${catLabel}</div>
+                    <div class="media-emoji">${itemIcon}</div>
+                    <div class="media-price mono">${formatMoney(item.askingPrice)}</div>
                 </div>
-                ${visibleInfo}
-                <div class="text-2xl font-bold text-center text-green-600 mt-2">${formatMoney(item.askingPrice)}</div>
-                <button class="w-full mt-3 bg-gradient-to-r from-blue-500 to-indigo-600 text-white py-2 rounded-lg font-semibold hover:shadow-lg transition">
-                    💬 Торговаться
-                </button>
+                <div class="baza-card-body">
+                    <div class="baza-card-title">${displayName}</div>
+                    <div class="baza-card-meta">
+                        <span class="seller-pill"><span class="ico">${item.sellerIcon}</span>${item.sellerName}</span>
+                    </div>
+                    ${visibleInfo}
+                </div>
+                <div class="baza-card-footer">
+                    <button class="btn primary small" onclick="startHaggle('${item.id}')">Торговаться →</button>
+                </div>
             </div>
         `;
     }).join('');

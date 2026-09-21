@@ -9,11 +9,10 @@ function renderExpertiseModal() {
     const skill = gameState.skills[e.item.category] || 0;
     const displayName = getDisplayName(e.item, skill);
     
-    document.getElementById('expertiseItemName').textContent = `Экспертиза: ${displayName}`;
-    document.getElementById('expertiseItemDesc').textContent = `${CATEGORY_ICONS[e.item.category]} ${e.item.category}`;
+    document.getElementById('expertiseItemName').textContent = `${displayName}`;
+    document.getElementById('expertiseItemDesc').textContent = `${CATEGORY_ICONS[e.item.category]} ${e.item.category} • уровень ${skill}`;
     
     updateExpertiseAttentionDisplay();
-    
     
     const methods = [
         { id: 'visual', name: 'Визуальный осмотр', icon: '👁️', info: 'Дефекты и общее состояние' },
@@ -24,8 +23,6 @@ function renderExpertiseModal() {
         { id: 'expert', name: 'Эксперт', icon: '👨‍🔬', info: 'Полное заключение' }
     ];
     
-    
-    // Инициализируем стоимости если их нет
     if (!e.item.expertiseMethodCosts) {
         e.item.expertiseMethodCosts = { ...BASE_EXPERTISE_COSTS };
     }
@@ -38,62 +35,36 @@ function renderExpertiseModal() {
         const baseCost = BASE_EXPERTISE_COSTS[methodId];
         const isIncreased = currentCost > baseCost;
         
-        // Режим тестера - без ограничений
         if (gameState.isTesterMode) {
             const canAfford = gameState.attention >= currentCost;
-            const buttonClass = canAfford ?
-                'bg-purple-500 hover:bg-purple-600 text-white transform hover:scale-105' :
-                'bg-gray-300 text-gray-500 cursor-not-allowed opacity-60';
-            
             return `
                 <button onclick="${canAfford ? `useExpertiseMethod('${methodId}')` : ''}" ${!canAfford ? 'disabled' : ''} 
-                    class="tactic-btn ${buttonClass} rounded-lg font-semibold transition-all duration-200 border-2 border-purple-700"
+                    class="tactic-btn ${canAfford ? '' : ''}" style="${canAfford ? 'background:var(--ink);color:var(--paper);border-color:var(--ink)' : 'opacity:0.45'}"
                     title="${method.info}">
-                    <div class="text-xl mb-1">${method.icon}</div>
-                    <div class="text-xs leading-tight">${method.name}</div>
-                    <div class="text-xs mt-1 ${isIncreased ? 'text-orange-300' : 'opacity-80'}">
-                        ${currentCost}⚡
-                        ${isIncreased ? ` (+${currentCost - baseCost})` : ''}
+                    <div style="display:flex;gap:8px;align-items:center">
+                        <span style="font-size:18px">${method.icon}</span>
+                        <span style="font-size:12px;font-weight:700">${method.name}</span>
                     </div>
+                    <div class="mono small" style="margin-top:4px;opacity:0.8">${currentCost}⚡${isIncreased ? ` +${currentCost-baseCost}` : ''}</div>
                 </button>
             `;
         }
         
-        // Режим игрока
-        
-        // Для методов не из списка (например, reference) - старая логика
         if (!methodConfig) {
             const canAfford = gameState.attention >= currentCost;
             const canUse = methodId === 'reference' ? skill >= 3 : true;
-            
-            const buttonClass = canUse && canAfford ?
-                'bg-purple-500 hover:bg-purple-600 text-white transform hover:scale-105' :
-                'bg-gray-300 text-gray-500 cursor-not-allowed opacity-60';
-            
-            let useInfo = '';
-            if (methodId === 'reference') {
-                useInfo = skill >= 3 ? '' : 'Требуется 3 уровень навыка';
-            }
-            
+            const useInfo = methodId === 'reference' && skill < 3 ? 'Требуется 3 ур' : '';
             return `
                 <button onclick="${canUse && canAfford ? `useExpertiseMethod('${methodId}')` : ''}" 
                         ${!(canUse && canAfford) ? 'disabled' : ''} 
-                        class="tactic-btn ${buttonClass} rounded-lg font-semibold transition-all duration-200 border-2 border-purple-700"
-                        title="${method.info}${useInfo ? '\n' + useInfo : ''}">
-                    <div class="text-xl mb-1">${method.icon}</div>
-                    <div class="text-xs leading-tight">${method.name}</div>
-                    <div class="text-xs mt-1 ${isIncreased ? 'text-orange-300' : 'opacity-80'}">
-                        ${currentCost}⚡
-                        ${isIncreased ? ` (+${currentCost - baseCost})` : ''}
-                    </div>
-                    ${useInfo ? `<div class="text-xs mt-1 text-red-500">${useInfo}</div>` : ''}
+                        class="tactic-btn" title="${method.info}${useInfo ? '\n'+useInfo : ''}">
+                    <div style="display:flex;gap:8px;align-items:center"><span style="font-size:18px">${method.icon}</span><span style="font-size:12px;font-weight:700">${method.name}</span></div>
+                    <div class="mono small" style="margin-top:4px">${currentCost}⚡${isIncreased ? ` +${currentCost-baseCost}` : ''}</div>
+                    ${useInfo ? `<div class="small" style="color:var(--danger);margin-top:2px">${useInfo}</div>` : ''}
                 </button>
             `;
         }
         
-        // Для методов из списка - новая логика с уровнями
-        
-        // Определяем максимальное количество использований по уровню
         let maxUses = 0;
         if (skill >= methodConfig.third) maxUses = 3;
         else if (skill >= methodConfig.second) maxUses = 2;
@@ -103,54 +74,34 @@ function renderExpertiseModal() {
         const canUse = remainingUses > 0;
         const canAfford = gameState.attention >= currentCost;
         
-        // ФОРМИРУЕМ ИНФОРМАЦИЮ ОБ ИСПОЛЬЗОВАНИИ (ИСПРАВЛЕННОЕ)
         let useInfo = '';
-        
         if (skill < methodConfig.first) {
-            // Уровень слишком низкий для первого использования
-            useInfo = `Требуется ${methodConfig.first} уровень`;
+            useInfo = `нужен ${methodConfig.first} ур`;
         } else if (currentUses >= maxUses) {
-            // Достигнут лимит для текущего уровня
-            if (skill >= methodConfig.third) {
-                useInfo = 'Лимит исчерпан';
-            } else if (skill >= methodConfig.second) {
-                // Уровень 7-13, но 2 использования уже использованы
-                useInfo = `Требуется ${methodConfig.third} уровень для 3-го`;
-            } else {
-                // Уровень 1-6, но 1 использование уже использовано
-                useInfo = `Требуется ${methodConfig.second} уровень для 2-го`;
-            }
+            if (skill >= methodConfig.third) useInfo = 'лимит';
+            else if (skill >= methodConfig.second) useInfo = `нужен ${methodConfig.third} ур для 3-го`;
+            else useInfo = `нужен ${methodConfig.second} ур для 2-го`;
         } else {
-            // Есть доступные использования
-            useInfo = `Осталось: ${remainingUses}/${maxUses}`;
+            useInfo = `${remainingUses}/${maxUses}`;
         }
         
-        // Особые иконки для тестирования
         let displayIcon = method.icon;
-        let displayName = method.name;
+        let displayNameM = method.name;
         if (methodId === 'testing') {
             const useNumber = currentUses + 1;
             displayIcon = TESTING_ICONS[useNumber] || TESTING_ICONS[1];
-            displayName = TESTING_NAMES[useNumber] || TESTING_NAMES[1];
+            displayNameM = TESTING_NAMES[useNumber] || TESTING_NAMES[1];
         }
         
-        const buttonClass = canUse && canAfford ?
-            'bg-purple-500 hover:bg-purple-600 text-white transform hover:scale-105' :
-            'bg-gray-300 text-gray-500 cursor-not-allowed opacity-60';
-        
+        const activeStyle = canUse && canAfford ? 'background:var(--ink);color:var(--paper);border-color:var(--ink)' : 'opacity:0.45';
         return `
             <button onclick="${canUse && canAfford ? `useExpertiseMethod('${methodId}')` : ''}" 
                     ${!(canUse && canAfford) ? 'disabled' : ''} 
-                    class="tactic-btn ${buttonClass} rounded-lg font-semibold transition-all duration-200 border-2 border-purple-700"
-                    title="${method.info}\n${useInfo}">
-                <div class="text-xl mb-1">${displayIcon}</div>
-                <div class="text-xs leading-tight">${displayName}</div>
-                <div class="text-xs mt-1 ${isIncreased ? 'text-orange-300' : 'opacity-80'}">
-                    ${currentCost}⚡
-                    ${isIncreased ? ` (+${currentCost - baseCost})` : ''}
-                </div>
-                <div class="text-xs mt-1 ${canUse ? 'text-green-500' : 'text-red-500'}">
-                    ${useInfo}
+                    class="tactic-btn" style="${activeStyle}" title="${method.info}\n${useInfo}">
+                <div style="display:flex;gap:8px;align-items:center"><span style="font-size:18px">${displayIcon}</span><span style="font-size:12px;font-weight:700">${displayNameM}</span></div>
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px">
+                    <span class="mono small">${currentCost}⚡${isIncreased ? ` +${currentCost-baseCost}` : ''}</span>
+                    <span class="eyebrow small" style="${canUse ? 'color:var(--accent-3)' : 'color:var(--danger)'}">${useInfo}</span>
                 </div>
             </button>
         `;
@@ -161,9 +112,6 @@ function renderExpertiseModal() {
     
     renderGoldenShards(e.мitem);
     
-    
-    
-    // 🔥 ДОБАВЛЕНО: Обновляем PNG при каждом обновлении модалки
     setTimeout(() => {
         if (currentExpertise && currentExpertise.item) {
             updateMethodVisuals();
@@ -171,4 +119,5 @@ function renderExpertiseModal() {
     }, 100);
     updateOfficeVisuals();
 }
+
 

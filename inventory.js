@@ -2,7 +2,6 @@ function renderInventory() {
     const container = document.getElementById('inventoryItems');
     const empty = document.getElementById('emptyInventory');
     
-    // Фильтруем предметы в зависимости от настройки показа образцов
     let filteredItems = gameState.inventory;
     if (!gameState.showSamplesInInventory) {
         filteredItems = gameState.inventory.filter(item => !item.isSample);
@@ -12,190 +11,144 @@ function renderInventory() {
         container.classList.add('hidden');
         empty.classList.remove('hidden');
         
-        // Обновляем текст пустого инвентаря в зависимости от фильтра
         if (!gameState.showSamplesInInventory && gameState.inventory.length > 0) {
             empty.innerHTML = `
-                <div class="text-center text-gray-500 py-12">
-                    <div class="text-4xl mb-4">🧠</div>
-                    <div>Образцы скрыты. В инвентаре есть ${gameState.inventory.length} предметов.</div>
-                    <div class="text-sm mt-2">Нажмите "Показать образцы", чтобы увидеть все предметы</div>
-                </div>
+                <div class="empty-ico">🧠</div>
+                <div class="empty-title">Образцы скрыты</div>
+                <div class="empty-sub">В инвентаре ${gameState.inventory.length} предметов. Нажми «Показать образцы» чтобы увидеть все.</div>
             `;
         } else {
             empty.innerHTML = `
-                <div class="text-center text-gray-500 py-12">
-                    Ваш инвентарь пуст. Купите что-нибудь на рынке!
-                </div>
+                <div class="empty-ico">◫</div>
+                <div class="empty-title">Инвентарь пуст</div>
+                <div class="empty-sub">Купи что-нибудь на рынке — и начнётся самое интересное</div>
             `;
         }
-        
         return;
     }
     
     container.classList.remove('hidden');
     empty.classList.add('hidden');
     
-    // Создаём HTML для кнопки фильтра
     const filterButtonHTML = `
-        <div class="col-span-full mb-4">
-            <button onclick="toggleSampleFilter()" 
-                    class="flex items-center gap-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white px-4 py-2 rounded-lg font-semibold hover:shadow-lg transition">
-                <span class="text-xl">🧠</span>
-                <span>${gameState.showSamplesInInventory ? 'Скрыть образцы' : 'Показать образцы'}</span>
+        <div class="filter-bar" style="grid-column:1/-1;display:flex;align-items:center;gap:10px;margin-bottom:4px">
+            <button onclick="toggleSampleFilter()" class="btn small ${gameState.showSamplesInInventory ? 'primary' : 'ghost'}">
+                <span>🧠</span> ${gameState.showSamplesInInventory ? 'Скрыть образцы' : 'Показать образцы'}
             </button>
-            <div class="text-xs text-gray-600 mt-1">
-                ${gameState.showSamplesInInventory ? 'Показаны все предметы' : 'Показаны только предметы для продажи'}
-                • Образцов: ${gameState.inventory.filter(item => item.isSample).length}
-            </div>
+            <div class="muted small">Образцов: ${gameState.inventory.filter(item => item.isSample).length} • Показано: ${filteredItems.length}</div>
         </div>
     `;
     
-    // Создаём HTML для всех предметов
     let itemsHTML = filterButtonHTML;
     
     filteredItems.forEach(item => {
         const skill = gameState.skills[item.category] || 0;
         const displayName = item.expertiseDone ? getTrueName(item) : getDisplayName(item, skill);
-        const itemIcon = DETAILED_ICONS[item.baseName] || CATEGORY_ICONS[item.category];
+        const itemIcon = DETAILED_ICONS[item.baseName] || CATEGORY_ICONS[item.category] || '◫';
         
-        // Бейджик "ОБРАЗЕЦ"
-        const sampleBadge = item.isSample ? `
-            <div class="absolute top-2 right-2 bg-gradient-to-r from-yellow-400 to-orange-500 text-black text-xs font-bold px-2 py-1 rounded-full shadow-lg">
-                ОБРАЗЕЦ
-            </div>
-        ` : '';
+        const sampleBadge = item.isSample ? `<div class="sample-ribbon">ОБРАЗЕЦ</div>` : '';
+        const restorationInfo = typeof renderRestorationInfo === 'function' ? renderRestorationInfo(item) : '';
         
-        // 🔥 ДОБАВЛЕНО: Информация о реставрации для режима тестера
-        const restorationInfo = renderRestorationInfo(item);
-        
-        // РЕЖИМ ИГРОКА: ОГРАНИЧЕННАЯ ИНФОРМАЦИЯ
         if (!gameState.isTesterMode) {
             let expertiseStatus = '';
-            let expertiseDetails = '';
             let restorationStatus = '';
             
             if (item.expertiseDone) {
-                // СТАТУС ЭКСПЕРТИЗЫ - ПРОСТОЙ ТЕКСТ
-                expertiseStatus = `<div class="text-xs text-gray-600">Экспертиза не проведена</div>`;
-                
-                // УСТАНОВЛЕННЫЕ ИГРОКОМ ЗНАЧЕНИЯ В СИНЕЙ ПОДСВЕТКЕ
                 const playerValue = item.estimatedValue || 0;
                 const playerAuthenticity = item.soldAsAuthentic ? "Подлинник" : "Подделка";
-                const playerAge = item.estimatedAge || "Не определен";
+                const playerAge = item.estimatedAge || "—";
                 
                 expertiseStatus = `
-                    <div class="bg-blue-100 border border-blue-300 rounded p-2 mb-2">
-                        <div class="text-sm font-bold text-blue-800 text-center">Ваша оценка: ${formatMoney(playerValue)}</div>
-                        <div class="text-sm text-blue-700 text-center">${playerAuthenticity}</div>
-                        <div class="text-sm text-blue-700 text-center">Возраст: ${playerAge} лет</div>
+                    <div class="inv-estimate">
+                        <div class="mono" style="font-size:15px;font-weight:900">${formatMoney(playerValue)}</div>
+                        <div class="small muted">${playerAuthenticity} • ${playerAge} лет</div>
                     </div>
                 `;
                 
-                // ОБОБЩЕННАЯ ИНФОРМАЦИЯ О ДЕФЕКТАХ - ЦВЕТОВАЯ ИНДИКАЦИЯ
                 const hasDefects = item.defects && item.defects.length > 0;
                 if (hasDefects) {
-                    restorationStatus = `<div class="text-xs text-red-600 font-semibold text-center mt-1">Есть дефекты</div>`;
+                    restorationStatus = `<div class="status-chip bad">есть дефекты</div>`;
                 } else {
-                    restorationStatus = `<div class="text-xs text-green-600 font-semibold text-center mt-1">Нет дефектов</div>`;
+                    restorationStatus = `<div class="status-chip good">без дефектов</div>`;
                 }
             } else {
-                // ДО ЭКСПЕРТИЗЫ - ТОЛЬКО БАЗОВАЯ ИНФОРМАЦИЯ
-                expertiseStatus = `<div class="text-xs text-gray-600">Экспертиза не проведена</div>`;
-                restorationStatus = `<div class="text-xs text-gray-500 text-center mt-1">Статус неизвестен</div>`;
+                expertiseStatus = `<div class="status-chip">экспертиза не проведена</div>`;
+                restorationStatus = `<div class="status-chip">статус неизвестен</div>`;
             }
             
-            // Кнопка образца
-            const sampleButton = `
-                <button onclick="toggleItemAsSample('${item.id}')" 
-                        class="flex-1 ${item.isSample ? 'bg-gradient-to-r from-yellow-500 to-orange-500' : 'bg-gradient-to-r from-gray-500 to-gray-700'} text-white py-2 rounded-lg text-sm hover:shadow-lg transition">
-                    🧠 ${item.isSample ? 'Не образец' : 'Образец'}
-                </button>
-            `;
-            
             itemsHTML += `
-                <div class="card rounded-lg shadow-lg p-4 relative">
+                <div class="inventory-card ${item.isSample ? 'sample' : ''}">
                     ${sampleBadge}
-                    <div class="text-4xl mb-2 text-center">${itemIcon}</div>
-                    <h3 class="font-bold mb-2 text-sm text-center">${displayName}</h3>
-                    <div class="text-sm text-gray-600 mb-2 text-center">Куплено за: ${formatMoney(item.purchasePrice)}</div>
-                    ${expertiseStatus}
-                    ${expertiseDetails}
-                    ${restorationStatus}
-                    <div class="flex gap-2 mt-3">
-                        ${!item.expertiseDone ? `<button onclick="startExpertise('${item.id}')" class="flex-1 bg-purple-500 text-white py-2 rounded-lg text-sm hover:bg-purple-600">🔍 Экспертиза</button>` : ''}
-                        ${item.expertiseDone ? `<button onclick="startSell('${item.id}')" class="flex-1 bg-green-500 text-white py-2 rounded-lg text-sm hover:bg-green-600">💰 Продать</button>` : ''}
-                        ${item.expertiseDone ? `<button onclick="startRestoration('${item.id}')" class="flex-1 bg-yellow-500 text-white py-2 rounded-lg text-sm hover:bg-yellow-600">🛠️ Реставрировать</button>` : ''}
-                        ${sampleButton}
+                    <div class="inv-media"><div class="emoji">${itemIcon}</div></div>
+                    <div class="inv-body">
+                        <div class="inv-title">${displayName}</div>
+                        <div class="inv-price mono">Куплено за ${formatMoney(item.purchasePrice)}</div>
+                        <div class="inv-status">
+                            ${expertiseStatus}
+                            ${restorationStatus}
+                            ${restorationInfo ? `<div class="muted small" style="margin-top:6px">${restorationInfo}</div>` : ''}
+                        </div>
+                        <div class="inv-actions">
+                            ${!item.expertiseDone ? `<button onclick="startExpertise('${item.id}')" class="btn small primary">🔍 Экспертиза</button>` : ''}
+                            ${item.expertiseDone ? `<button onclick="startSell('${item.id}')" class="btn small primary">💰 Продать</button>` : ''}
+                            ${item.expertiseDone ? `<button onclick="startRestoration('${item.id}')" class="btn small ghost">🛠️ Починить</button>` : ''}
+                            <button onclick="toggleItemAsSample('${item.id}')" class="btn small ${item.isSample ? '' : 'ghost'}">🧠 ${item.isSample ? 'Не образец' : 'Образец'}</button>
+                        </div>
                     </div>
                 </div>
             `;
         } else {
-            // РЕЖИМ ТЕСТЕРА - ПОЛНАЯ ИНФОРМАЦИЯ
             const expertiseStatus = item.expertiseDone ?
-                `<div class="text-xs text-green-600">✅ Экспертиза завершена</div>
-                 <div class="text-sm font-bold text-purple-600">Реальная стоимость: ${formatMoney(item.realValue || 0)}</div>` :
-                `<div class="text-xs text-orange-600">⏳ Требуется экспертиза</div>`;
+                `<div class="status-chip good">✅ экспертиза • ${formatMoney(item.realValue || 0)}</div>` :
+                `<div class="status-chip bad">⏳ нужна экспертиза</div>`;
             
             let expertiseDetails = '';
             if (item.expertiseDone) {
                 const marksDisplay = item.marks && item.marks.length > 0 ?
-                    `<div class="text-xs text-blue-600">🏷️ Клейма: ${item.marks.join(', ')}</div>` :
-                    `<div class="text-xs text-gray-500">🏷️ Клейма: отсутствуют</div>`;
-                
+                    `<div class="small">🏷️ ${item.marks.join(', ')}</div>` :
+                    `<div class="small muted">🏷️ без клейм</div>`;
                 const authenticityDisplay = item.authentic ?
-                    `<div class="text-xs text-green-600">✅ Подлинник</div>` :
-                    `<div class="text-xs text-red-600">❌ Подделка</div>`;
-                
-                const ageDisplay = `<div class="text-xs text-purple-600">📅 Возраст: ${Math.round(item.age)} лет (оценка: ${item.estimatedAge || 'нет'})</div>`;
-                
+                    `<div class="small" style="color:#2f6a2f">✅ подлинник</div>` :
+                    `<div class="small" style="color:#9a2a22">❌ подделка</div>`;
+                const ageDisplay = `<div class="small">📅 ${Math.round(item.age)} лет (оц: ${item.estimatedAge || '—'})</div>`;
                 let styleDisplay;
                 if (!item.authentic && item.dominantStyle) {
                     const fakeAge = Math.min(326, item.age + 100);
                     const fakeStyle = assignDominantStyle({ age: fakeAge, category: item.category, authentic: false });
-                    styleDisplay = `<div class="text-xs text-orange-600">🎨 Стиль: ${fakeStyle.name} (фейковый)</div>`;
+                    styleDisplay = `<div class="small">🎨 ${fakeStyle.name} (фейк)</div>`;
                 } else {
                     styleDisplay = item.dominantStyle ?
-                        `<div class="text-xs text-orange-600">🎨 Стиль: ${item.dominantStyle.name}</div>` :
-                        `<div class="text-xs text-gray-500">🎨 Стиль: не определен</div>`;
+                        `<div class="small">🎨 ${item.dominantStyle.name}</div>` :
+                        `<div class="small muted">🎨 стиль не определен</div>`;
                 }
-                
-                expertiseDetails = `
-                    ${marksDisplay}
-                    ${authenticityDisplay}
-                    ${ageDisplay}
-                    ${styleDisplay}
-                `;
+                expertiseDetails = `<div class="stack" style="gap:4px;margin-top:8px">${marksDisplay}${authenticityDisplay}${ageDisplay}${styleDisplay}</div>`;
             }
             
             const restorationStatus = item.restored ?
-                `<div class="text-xs text-green-600">✨ Отреставрирован</div>` :
+                `<div class="status-chip good">✨ отреставрирован</div>` :
                 (item.defects && item.defects.length > 0 ?
-                    `<div class="text-xs text-red-600">🛠️ ${item.defects.length} дефектов</div>` :
-                    `<div class="text-xs text-green-600">✅ Нет дефектов</div>`);
-            
-            // Кнопка образца для режима тестера
-            const sampleButton = `
-                <button onclick="toggleItemAsSample('${item.id}')" 
-                        class="flex-1 ${item.isSample ? 'bg-gradient-to-r from-yellow-500 to-orange-500' : 'bg-gradient-to-r from-gray-500 to-gray-700'} text-white py-2 rounded-lg text-sm hover:shadow-lg transition">
-                    🧠 ${item.isSample ? 'Не образец' : 'Образец'}
-                </button>
-            `;
+                    `<div class="status-chip bad">🛠️ ${item.defects.length} дефектов</div>` :
+                    `<div class="status-chip good">✅ без дефектов</div>`);
             
             itemsHTML += `
-                <div class="card rounded-lg shadow-lg p-4 relative">
+                <div class="inventory-card ${item.isSample ? 'sample' : ''}">
                     ${sampleBadge}
-                    <div class="text-4xl mb-2 text-center">${itemIcon}</div>
-                    <h3 class="font-bold mb-2 text-sm text-center">${displayName}</h3>
-                    <div class="text-sm text-gray-600 mb-2 text-center">Куплено за: ${formatMoney(item.purchasePrice)}</div>
-                    ${expertiseStatus}
-                    ${expertiseDetails}
-                    ${restorationStatus}
-                    ${restorationInfo}
-                    <div class="flex gap-2 mt-3">
-                        ${!item.expertiseDone ? `<button onclick="startExpertise('${item.id}')" class="flex-1 bg-purple-500 text-white py-2 rounded-lg text-sm hover:bg-purple-600">🔍 Экспертиза</button>` : ''}
-                        ${item.expertiseDone ? `<button onclick="startSell('${item.id}')" class="flex-1 bg-green-500 text-white py-2 rounded-lg text-sm hover:bg-green-600">💰 Продать</button>` : ''}
-                        ${item.expertiseDone ? `<button onclick="startRestoration('${item.id}')" class="flex-1 bg-yellow-500 text-white py-2 rounded-lg text-sm hover:bg-yellow-600">🛠️ Реставрировать</button>` : ''}
-                        ${sampleButton}
+                    <div class="inv-media"><div class="emoji">${itemIcon}</div></div>
+                    <div class="inv-body">
+                        <div class="inv-title">${displayName}</div>
+                        <div class="inv-price mono">Куплено за ${formatMoney(item.purchasePrice)}</div>
+                        <div class="inv-status">
+                            ${expertiseStatus}
+                            ${expertiseDetails}
+                            ${restorationStatus}
+                            ${restorationInfo ? `<div style="margin-top:6px">${restorationInfo}</div>` : ''}
+                        </div>
+                        <div class="inv-actions">
+                            ${!item.expertiseDone ? `<button onclick="startExpertise('${item.id}')" class="btn small primary">🔍 Экспертиза</button>` : ''}
+                            ${item.expertiseDone ? `<button onclick="startSell('${item.id}')" class="btn small primary">💰 Продать</button>` : ''}
+                            ${item.expertiseDone ? `<button onclick="startRestoration('${item.id}')" class="btn small ghost">🛠️ Починить</button>` : ''}
+                            <button onclick="toggleItemAsSample('${item.id}')" class="btn small ${item.isSample ? '' : 'ghost'}">🧠 ${item.isSample ? 'Не образец' : 'Образец'}</button>
+                        </div>
                     </div>
                 </div>
             `;
@@ -204,4 +157,5 @@ function renderInventory() {
     
     container.innerHTML = itemsHTML;
 }
+
         
