@@ -298,6 +298,10 @@ function generateMarket() {
         gameState.marketItems.push(generateMarketItem(category, sellerTypeKey));
     }
     
+    // Конкуренты привязаны к прилавку с самого начала: прогулка показывает их сразу,
+    // а торг использует тот же набор (пауза переговоров сохраняет свой).
+    gameState.marketItems.forEach(it => { it.competitors = generateCompetitors(); });
+    
     if (currentMarketView === 'walking') {
         initWalkingMarket();
     }
@@ -593,7 +597,7 @@ function updateMarketScale() {
                 patience: paused ? paused.patience : item.sellerPortrait.patience,
                 maxPatience: paused ? paused.maxPatience : item.sellerPortrait.patience,
                 usedTactics: paused ? [...paused.usedTactics] : [],
-                competitors: paused ? paused.competitors.map(c => ({...c})) : (gameState.firstDealToday ? [] : generateCompetitors()),
+                competitors: paused ? paused.competitors.map(c => ({...c})) : (gameState.firstDealToday ? [] : (Array.isArray(item.competitors) && item.competitors.length ? item.competitors.map(c => ({...c})) : generateCompetitors())),
                 currentQuote: paused ? paused.currentQuote : initialQuote
             };
             gameState.firstDealToday = false;
@@ -635,11 +639,13 @@ function renderHaggleModal() {
     
     // КОНКУРЕНТЫ - КОМПАКТНОЕ ОТОБРАЖЕНИЕ
     const competitorsHTML = h.competitors.length > 0 ?
-        h.competitors.slice(0, 2).map(comp =>
-            `<div class="truncate">👤 ${comp.name}</div>`
-        ).join('') :
+        h.competitors.map(comp => {
+            const tier = comp.coefficient >= 1.8 ? 'high' : comp.coefficient >= 0.7 ? 'mid' : 'low';
+            return `<div class="truncate competitor-item" title="${comp.group}"><span class="crowd-dot tier-${tier}"></span>${comp.name}</div>`;
+        }).join('') :
         '<div class="text-gray-500">Нет</div>';
     document.getElementById('competitors').innerHTML = competitorsHTML;
+    if (typeof renderHaggleCrowd === 'function') renderHaggleCrowd();
     
     // ⭐ НОВАЯ ЛОГИКА: СОБИРАЕМ ДОСТУПНЫЕ ТАКТИКИ
     const availableTactics = [];
@@ -915,6 +921,7 @@ function renderHaggleProgress() {
         const interceptor = checkCompetitorInterception(h);
         if (interceptor) {
             h.finished = true;
+            h.interceptedBy = interceptor.name;
             const discountPercent = ((h.item.askingPrice - h.currentPrice) / h.item.askingPrice) * 100;
             h.currentQuote = `Извините, но ${interceptor.name} только что предложил лучшую цену!`;
             showNotification(`😤 ${interceptor.name} перехватил товар! Скидка была ${discountPercent.toFixed(0)}%`, 'error');
@@ -1371,6 +1378,23 @@ function initWalkingMarket() {
             mediaElementHTML = `<img src="${sellerImagePath}" alt="${item.sellerName}" class="seller-portrait-img" style="${commonMediaStyles}" onerror="this.parentElement.style.display='none';">`;
         }
         
+        // ТОЛПА У ПРИЛАВКА В ПРОГУЛКЕ: конкуренты, привязанные к лоту,
+        // стоят со спины чуть ближе к зрителю, чем продавец.
+        if (!Array.isArray(item.competitors) || item.competitors.length === 0) {
+            item.competitors = generateCompetitors(); // старые сохранения без поля
+        }
+        const walkCrowd = item.competitors.slice(0, 3);
+        const crowdSlots = { 1: [0.55], 2: [-0.5, 0.58], 3: [-0.62, 0.14, 0.68] };
+        const crowdOffsets = crowdSlots[walkCrowd.length] || crowdSlots[3];
+        const crowdArts = typeof crowdArtsFor === 'function' ? crowdArtsFor(walkCrowd) : [];
+        const walkCrowdHTML = hasPortrait ? walkCrowd.map((comp, i) => {
+            const art = crowdArts[i] || null;
+            if (!art) return '';
+            const crowdHeight = Math.round(portraitHeight * (1 + comp.coefficient * 0.06));
+            const flip = i % 2 === 1 ? ' scaleX(-1)' : '';
+            return `<img src="${art}" alt="" class="walk-crowd-figure" style="position: absolute; bottom: ${bottomOffset - scaled(10)}px; left: calc(50% + ${Math.round(crowdOffsets[i] * portraitWidth)}px); transform: translateX(-50%)${flip}; height: ${crowdHeight}px; width: auto; z-index: ${18 + i}; filter: saturate(0.85) brightness(0.97) drop-shadow(0 ${scaled(6)}px ${scaled(8)}px rgba(30,35,22,0.35)); pointer-events: none;">`;
+        }).join('') : '';
+        
         marketStripHTML += `
             <div class="market-item-container" data-item-id="${item.id}" data-seller-type="${item.sellerType}"
                  style="position: absolute; left: ${leftPercent.toFixed(2)}%; top: ${topPercent.toFixed(2)}%; transform: translate(-50%, -50%); z-index: ${isOnFirstBg ? 10 : 20};">
@@ -1378,6 +1402,8 @@ function initWalkingMarket() {
                 ${hasPortrait ? `<div class="seller-portrait-wrapper" style="position: absolute; bottom: ${bottomOffset}px; left: 50%; transform: translateX(-50%); z-index: 15; pointer-events: none; width: max-content; display: flex; justify-content: center;">
                         ${mediaElementHTML}
                     </div>` : ''}
+                
+                ${walkCrowdHTML ? `<div class="walk-crowd" aria-hidden="true" style="position: absolute; inset: 0; pointer-events: none;">${walkCrowdHTML}</div>` : ''}
                 
                 <button class="market-item-btn ${index < 3 ? 'market-item-new' : ''}" id="walking-item-${item.id}" onclick="handleWalkingMarketClick('${item.id}')" title="${displayName} - ${formatMoney(item.askingPrice)}"
                         style="position: relative; margin-top: ${hasPortrait ? scaled(30) : 0}px; padding: ${itemPadding}px; background: ${hasPortrait ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.8)'}; border-radius: ${borderRadius}px; border: ${scaled(2)}px solid ${hasPortrait ? '#4F46E5' : '#9CA3AF'}; z-index: 25; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;">
