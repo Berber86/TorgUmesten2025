@@ -83,6 +83,11 @@
   filter: saturate(0.95) drop-shadow(0 8px 9px rgba(70, 25, 12, 0.45));
 }
 
+/* Конкуренты у прилавков в режиме прогулки */
+.walk-crowd-figure {
+  image-rendering: pixelated;
+}
+
 /* Точки угрозы в текстовом списке конкурентов */
 .crowd-dot {
   display: inline-block;

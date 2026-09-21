@@ -76,12 +76,42 @@ const ROOT = path.join(__dirname, "..");
   window.eval("gameState.firstDealToday = false");
   const itemCount = window.eval("gameState.marketItems.length");
   assert.ok(itemCount > 0, "рынок пуст");
+
+  // Конкуренты привязаны к каждому прилавку сразу после генерации.
+  const perItem = window.eval("gameState.marketItems.map(i => (i.competitors || []).length)");
+  assert.ok(
+    perItem.every((n) => n >= 1 && n <= 3),
+    "у прилавков нет предварительных конкурентов: " + perItem,
+  );
+
+  // Прогулка показывает толпу у прилавков сразу.
+  window.eval("currentMarketView = 'walking'");
+  window.initWalkingMarket();
+  const walkFigures = doc.querySelectorAll("#new-market-view .walk-crowd-figure");
+  assert.ok(
+    walkFigures.length >= itemCount && walkFigures.length <= 3 * itemCount,
+    "прогулка не показала конкурентов у прилавков: " + walkFigures.length,
+  );
+  for (const img of walkFigures) {
+    assert.ok(
+      /competitor_portraits\/crowd-/.test(img.getAttribute("src")),
+      "фигура прогулки не из набора толпы",
+    );
+  }
+  window.eval("currentMarketView = 'cards'");
+
   const itemId = window.eval("gameState.marketItems[0].id");
+  const itemComps = window.eval("gameState.marketItems[0].competitors.map(c => c.name)");
   window.startHaggle(itemId);
 
   const h = window.eval("currentHaggle");
   assert.ok(h, "торг не открылся");
   assert.ok(!doc.getElementById("haggleModal").classList.contains("hidden"), "модалка скрыта");
+  assert.deepEqual(
+    h.competitors.map((c) => c.name),
+    itemComps,
+    "торг использует не тот набор конкурентов, что показан у прилавка",
+  );
 
   const layer = doc.querySelector("#haggleModal .crowd-layer");
   assert.ok(layer, "слой толпы не создан");

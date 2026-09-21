@@ -7,7 +7,6 @@
 (function () {
   "use strict";
 
-  const ART_DIR = "competitor_portraits/";
   const SLOTS = { 1: [58], 2: [40, 74], 3: [26, 56, 84] };
 
   const sizeFor = (coef) =>
@@ -18,35 +17,6 @@
     coef >= 0.3 ? 70 : 64;
 
   const tierFor = (coef) => (coef >= 1.8 ? "high" : coef >= 0.7 ? "mid" : "low");
-
-  function groupFor(comp) {
-    if (typeof competitorGroups === "undefined") return null;
-    return (
-      competitorGroups.find((g) => g.name === comp.group) ||
-      competitorGroups.find((g) => g.members.includes(comp.name)) ||
-      null
-    );
-  }
-
-  function hashName(s) {
-    let h = 5381;
-    for (let i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) >>> 0;
-    return h;
-  }
-
-  // Знаковым именам — своя фигура (поле for), остальным —
-  // устойчивый подбор по имени из набора группы, чтобы у каждого
-  // покупателя был один и тот же облик от торга к торгу.
-  function artFor(comp) {
-    const group = groupFor(comp);
-    if (!group) return null;
-    const arts = group.arts || (group.art ? [{ file: group.art }] : []);
-    if (!arts.length) return null;
-    const named = arts.find((a) => a.for && a.for.includes(comp.name));
-    const pool = arts.map((a) => a.file);
-    const file = named ? named.file : pool[hashName(comp.name) % pool.length];
-    return ART_DIR + file;
-  }
 
   function positionLayer(layer) {
     const visual = document.querySelector("#haggleModal .seller-visual");
@@ -93,7 +63,7 @@
     const slots = SLOTS[comps.length] || SLOTS[3];
     layer.innerHTML = comps
       .map((comp, i) => {
-        const art = artFor(comp);
+        const art = typeof crowdArtFor === "function" ? crowdArtFor(comp) : null;
         if (!art) return "";
         const tier = tierFor(comp.coefficient);
         const intercepting = h.interceptedBy === comp.name ? " intercepting" : "";
