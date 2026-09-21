@@ -635,11 +635,13 @@ function renderHaggleModal() {
     
     // КОНКУРЕНТЫ - КОМПАКТНОЕ ОТОБРАЖЕНИЕ
     const competitorsHTML = h.competitors.length > 0 ?
-        h.competitors.slice(0, 2).map(comp =>
-            `<div class="truncate">👤 ${comp.name}</div>`
-        ).join('') :
+        h.competitors.map(comp => {
+            const tier = comp.coefficient >= 1.8 ? 'high' : comp.coefficient >= 0.7 ? 'mid' : 'low';
+            return `<div class="truncate competitor-item" title="${comp.group}"><span class="crowd-dot tier-${tier}"></span>${comp.name}</div>`;
+        }).join('') :
         '<div class="text-gray-500">Нет</div>';
     document.getElementById('competitors').innerHTML = competitorsHTML;
+    if (typeof renderHaggleCrowd === 'function') renderHaggleCrowd();
     
     // ⭐ НОВАЯ ЛОГИКА: СОБИРАЕМ ДОСТУПНЫЕ ТАКТИКИ
     const availableTactics = [];
@@ -915,6 +917,7 @@ function renderHaggleProgress() {
         const interceptor = checkCompetitorInterception(h);
         if (interceptor) {
             h.finished = true;
+            h.interceptedBy = interceptor.name;
             const discountPercent = ((h.item.askingPrice - h.currentPrice) / h.item.askingPrice) * 100;
             h.currentQuote = `Извините, но ${interceptor.name} только что предложил лучшую цену!`;
             showNotification(`😤 ${interceptor.name} перехватил товар! Скидка была ${discountPercent.toFixed(0)}%`, 'error');
