@@ -36,6 +36,11 @@
   const category = (item) => marketCategoryNames[item.category] || "Редкости";
   function picture(item) {
     const name = item.baseName || "";
+    if (/подсвечник|канделябр/i.test(name))
+      return "assets/object-candlestick.jpg";
+    if (/балерин/i.test(name)) return "assets/object-ballerina.jpg";
+    if (/ложк|вилк|столовый набор|столовых приборов/i.test(name))
+      return "assets/object-cutlery.jpg";
     if (/самовар/i.test(name)) return "assets/object-samovar.jpg";
     if (/чай|чаш|подстаканник/i.test(name)) return "assets/object-teacup.jpg";
     if (/клинок|штык|кортик|сабл|шпаг|нож|палаш|шашк/i.test(name))
@@ -206,6 +211,7 @@
     const item = gameState.marketItems.find((i) => String(i.id) === String(id));
     if (!item) return;
     previewId = item.id;
+    inspector.dataset.itemId = String(item.id);
     const cost = ATTENTION_COSTS.ENTER_HAGGLE;
     inspector.innerHTML = `<button class="dialog-close" data-close aria-label="Закрыть предпросмотр">${svg("close")}</button><div class="preview-art">${artwork(item)}<span>Условная иллюстрация · не фото предмета</span></div><div class="preview-info"><div class="eyebrow">${category(item)} / ПРЕДЛОЖЕНИЕ ПРОДАВЦА</div><h2 id="preview-name">${escape(getDisplayName(item, 0))}</h2><div class="preview-seller"><span>${escape(item.sellerIcon)}</span><div><small>Продавец</small><strong>${escape(item.sellerName)}</strong></div></div><dl><div><dt>Запрашивает</dt><dd>${money(item.askingPrice)}</dd></div><div><dt>Ваш бюджет</dt><dd>${money(gameState.money)}</dd></div></dl>${item.askingPrice > gameState.money ? '<p class="ux-warning">Цена выше вашего бюджета. Во время торга её можно попробовать снизить.</p>' : ""}<div class="preview-note"><strong>Что скрывается за первым впечатлением?</strong><p>Подлинность, возраст и стоимость ещё предстоит установить. Иллюстрация не является доказательством состояния предмета.</p></div><button class="ux-primary" data-start ${gameState.attention < cost ? "disabled" : ""}>Начать торг ${svg("arrow")}</button><p class="action-footnote">Вход в торг: ${cost} ед. внимания. Сейчас у вас ${Math.round(gameState.attention)}.</p><button class="ux-secondary" data-favorite="${escape(item.id)}">${svg("heart")} ${favorites.has(String(item.id)) ? "Убрать из избранного" : "Отложить в избранное"}</button><p class="preview-free">Просмотр бесплатный. Избранное не резервирует товар.</p></div>`;
     inspector.querySelector("[data-close]").onclick = closePreview;
@@ -220,6 +226,9 @@
     if (!inspector.open) inspector.showModal();
     else
       inspector.querySelector("[data-favorite]").focus({ preventScroll: true });
+    document.dispatchEvent(
+      new CustomEvent("torg:preview", { detail: { id: item.id } }),
+    );
   }
   function toggleFavorite(id) {
     id = String(id);
@@ -585,6 +594,8 @@
       ),
     { threshold: 0 },
   ).observe(document.querySelector(".wallet-strip"));
+  // Stable presentation API for the collector workspace. No game-state setters.
+  window.TorgUI = Object.freeze({ artwork, escape, money, svg, openPreview });
   // Existing updateDisplay wrapper resolves syncGameHUD at call time.
   window.addEventListener("load", () => {
     syncGameHUD();

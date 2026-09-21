@@ -26,6 +26,10 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || "playwright");
   const state = () => page.evaluate(() => JSON.stringify(gameState));
   const visit = async (tab) => page.evaluate((tab) => switchTab(tab), tab);
   await page.goto(process.env.GAME_URL || "http://127.0.0.1:3000");
+  await page.waitForFunction(
+    () => document.documentElement.dataset.atelierReady === "true",
+  );
+  await visit("market");
   await page.locator(".find-card").first().waitFor();
   await page.evaluate(() => document.fonts.ready);
   const initial = await state();
@@ -81,6 +85,14 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || "playwright");
   await page.locator('#haggleModal [onclick="acceptCurrentPrice()"]').click();
   await page.waitForTimeout(3300);
   assert.equal(
+    await page
+      .locator("#purchase-receipt")
+      .evaluate((el) => el.classList.contains("visible")),
+    true,
+    "Original purchase shows a receipt",
+  );
+  await page.locator(".receipt-close").click();
+  assert.equal(
     await page.evaluate(() => gameState.inventory.length),
     1,
     "Purchase uses original handler",
@@ -109,7 +121,9 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || "playwright");
   await page.waitForTimeout(300);
   assert.equal(await page.evaluate(() => gameState.day), oldDay + 1);
   await page.reload();
-  await page.waitForTimeout(200);
+  await page.waitForFunction(
+    () => document.documentElement.dataset.atelierReady === "true",
+  );
   await visit("market");
   assert.equal(
     await page.evaluate(() => gameState.inventory.length),
