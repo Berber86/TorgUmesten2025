@@ -85,161 +85,146 @@ const ERAS = {
 // КОНФИГУРАЦИЯ PNG-НАКЛЕЕК ДЛЯ ИНСТРУМЕНТОВ
 // ==============================================
 
+// Имена файлов = номер ступени навыка, с которой инструмент открывается:
+// visual {1,7,13} → method01/07/13, loupe {2,8,14} → method02/08/14,
+// internet {3,9,15} → method03/09/15, testing {4,10,16} → method04/10/16,
+// uv {5,11,17} → method05/11/17, expert {6,12,18} → method06/12/18.
+//
+// kind — как предмет стоит на столе:
+//   'flat'   — лежит на крышке стола (опирается на плоскость всей нижней кромкой)
+//   'upright'— ставится на стол (опорная точка — низ/подошва)
+//   'person' — стоит за столом (опорная точка — ноги, за дальним краем стола)
+// tilt — лёгкий небрежный поворот лежащих вещей, градусы.
+// Ширина ИЛИ высота в % от контейнера; второе измерение — автоматически (без сплющивания).
 const METHOD_VISUAL_CONFIG = {
     // Визуальный осмотр - 3 ступени
     visual_1: {
         zoneId: "visualZone",
         pngFile: "methods/method01.png",
-        width: "8%",
-        height: "8%",
-        offsetX: "0%",
-        offsetY: "0%"
+        kind: "flat",
+        width: "14%",
+        tilt: -4
     },
     visual_2: {
         zoneId: "visualZone",
         pngFile: "methods/method07.png",
-        width: "8%",
-        height: "8%",
-        offsetX: "0%",
-        offsetY: "0%"
+        kind: "flat",
+        width: "13%",
+        tilt: 3
     },
     visual_3: {
         zoneId: "visualZone",
         pngFile: "methods/method13.png",
-        width: "8%",
-        height: "8%",
-        offsetX: "0%",
-        offsetY: "0%"
+        kind: "flat",
+        width: "12%",
+        tilt: -3
     },
     
     // Лупа - 3 ступени
     loupe_1: {
         zoneId: "loupeZone",
         pngFile: "methods/method02.png",
-        width: "10%",
-        height: "10%",
-        offsetX: "0%",
-        offsetY: "0%"
+        kind: "flat",
+        width: "12%",
+        tilt: 4
     },
     loupe_2: {
         zoneId: "loupeZone",
         pngFile: "methods/method08.png",
-        width: "7%",
-        height: "7%",
-        offsetX: "0%",
-        offsetY: "0%"
+        kind: "flat",
+        width: "10%",
+        tilt: -3
     },
     loupe_3: {
         zoneId: "loupeZone",
         pngFile: "methods/method14.png",
-        width: "10%",
-        height: "10%",
-        offsetX: "0%",
-        offsetY: "0%"
+        kind: "upright",
+        height: "17%"
     },
     
     // Интернет - 3 ступени
     internet_1: {
         zoneId: "internetZone",
         pngFile: "methods/method03.png",
-        width: "15%",
-        height: "15%",
-        offsetX: "0%",
-        offsetY: "0%"
+        kind: "flat",
+        width: "11%",
+        tilt: 3
     },
     internet_2: {
         zoneId: "internetZone",
         pngFile: "methods/method09.png",
-        width: "15%",
-        height: "20%",
-        offsetX: "0%",
-        offsetY: "0%"
+        kind: "upright",
+        width: "17%"
     },
     internet_3: {
         zoneId: "internetZone",
         pngFile: "methods/method15.png",
-        width: "8%",
-        height: "8%",
-        offsetX: "0%",
-        offsetY: "0%"
+        kind: "upright",
+        width: "18%"
     },
     
     // Тестирование - 3 ступени
     testing_1: {
         zoneId: "testingZone",
         pngFile: "methods/method04.png",
-        width: "11%",
-        height: "9%",
-        offsetX: "0%",
-        offsetY: "0%"
+        kind: "flat",
+        width: "16%",
+        tilt: -5
     },
     testing_2: {
         zoneId: "testingZone",
         pngFile: "methods/method10.png",
-        width: "7%",
-        height: "7%",
-        offsetX: "0%",
-        offsetY: "0%"
+        kind: "flat",
+        width: "13%",
+        tilt: 2
     },
     testing_3: {
         zoneId: "testingZone",
         pngFile: "methods/method16.png",
-        width: "7%",
-        height: "7%",
-        offsetX: "0%",
-        offsetY: "0%"
+        kind: "upright",
+        width: "15%"
     },
     
     // УФ-лампа - 3 ступени
     uv_1: {
         zoneId: "uvZone",
         pngFile: "methods/method05.png",
-        width: "15%",
-        height: "20%",
-        offsetX: "0%",
-        offsetY: "0%"
+        kind: "flat",
+        width: "9.5%",
+        tilt: 4
     },
     uv_2: {
         zoneId: "uvZone",
         pngFile: "methods/method11.png",
-        width: "6%",
-        height: "6%",
-        offsetX: "0%",
-        offsetY: "0%"
+        kind: "flat",
+        width: "11%",
+        tilt: -3
     },
     uv_3: {
         zoneId: "uvZone",
         pngFile: "methods/method17.png",
-        width: "6%",
-        height: "6%",
-        offsetX: "0%",
-        offsetY: "0%"
+        kind: "upright",
+        width: "13%"
     },
     
-    // Эксперт - 3 ступени
+    // Эксперт - 3 ступени (люди стоят ЗА столом, а не на нём)
     expert_1: {
         zoneId: "expertZone",
         pngFile: "methods/method06.png",
-        width: "30%",
-        height: "60%",
-        offsetX: "0%",
-        offsetY: "0%"
+        kind: "person",
+        height: "22%"
     },
     expert_2: {
         zoneId: "expertZone",
         pngFile: "methods/method12.png",
-        width: "8%",
-        height: "8%",
-        offsetX: "0%",
-        offsetY: "0%"
+        kind: "person",
+        height: "20%"
     },
     expert_3: {
         zoneId: "expertZone",
         pngFile: "methods/method18.png",
-        width: "8%",
-        height: "8%",
-        offsetX: "0%",
-        offsetY: "0%"
+        kind: "person",
+        height: "21%"
     }
 };
 
@@ -510,7 +495,9 @@ function debugShowAllPNG() {
         
         const zoneRect = zone.getBoundingClientRect();
         const img = document.createElement('img');
-        img.src = "https://placehold.co/50x50/3498db/ffffff.png?text=" + z.method.substring(0, 3);
+        img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(
+            '<svg xmlns="http://www.w3.org/2000/svg" width="50" height="50"><rect width="50" height="50" fill="#3498db"/><text x="25" y="31" font-size="14" text-anchor="middle" fill="#fff" font-family="sans-serif">' + z.method.substring(0, 3) + '</text></svg>'
+        );
         img.style.position = 'absolute';
         img.style.left = (zoneRect.left - containerRect.left) + 'px';
         img.style.top = (zoneRect.top - containerRect.top) + 'px';
@@ -807,22 +794,36 @@ function createMethodPNG(config, zoneRect, containerRect) {
     img.dataset.method = config.method || 'unknown';
     img.dataset.step = config.step || 1;
     
-    // Вычисляем центр зоны в процентах от контейнера
-    const centerXPercent = ((zoneRect.left - containerRect.left + zoneRect.width / 2) / containerRect.width) * 100;
-    const centerYPercent = ((zoneRect.top - containerRect.top + zoneRect.height / 2) / containerRect.height) * 100;
+    // Вычисляем точку привязки зоны в процентах от контейнера
+    const anchorXPercent = ((zoneRect.left - containerRect.left + zoneRect.width / 2) / containerRect.width) * 100;
+    const anchorYPercent = ((zoneRect.top - containerRect.top + zoneRect.height / 2) / containerRect.height) * 100;
+    
+    const kind = config.kind || 'flat';
+    const tilt = kind === 'flat' ? (config.tilt || 0) : 0;
+    const anchorY = (kind === 'flat') ? '-50%' : '-100%';
+    const groundShadow = (kind === 'flat')
+        ? 'drop-shadow(0 2px 2px rgba(0,0,0,0.45)) drop-shadow(0 5px 6px rgba(0,0,0,0.25))'
+        : 'drop-shadow(0 4px 3px rgba(0,0,0,0.35)) drop-shadow(0 8px 8px rgba(0,0,0,0.22))';
     
     // Применяем CSS стили
     img.style.position = 'absolute';
-    img.style.left = `calc(${centerXPercent}% + ${config.offsetX} - ${config.width} / 2)`;
-    img.style.top = `calc(${centerYPercent}% + ${config.offsetY} - ${config.height} / 2)`;
-    img.style.width = config.width;
-    img.style.height = config.height;
+    img.style.left = `calc(${anchorXPercent}% + ${config.offsetX || '0%'})`;
+    img.style.top = `calc(${anchorYPercent}% + ${config.offsetY || '0%'})`;
+    img.style.width = config.width || '12%';
+    img.style.height = config.height && config.height !== 'auto' ? config.height : 'auto';
+    if (!config.width && config.height) img.style.width = 'auto';
     img.style.pointerEvents = 'auto';
-    img.style.zIndex = '10';
+    img.style.zIndex = (kind === 'person') ? '5' : (kind === 'flat' ? '11' : '10');
     img.style.cursor = 'pointer';
-    img.style.transform = 'scale(2)';
+    img.style.filter = groundShadow;
     img.style.opacity = '0';
+    img.style.transform = `translate(-50%, ${anchorY}) rotate(${tilt}deg) scale(1.15)`;
     img.style.transition = 'transform 0.3s ease-out, opacity 0.3s ease-out';
+    
+    requestAnimationFrame(() => {
+        img.style.opacity = '1';
+        img.style.transform = `translate(-50%, ${anchorY}) rotate(${tilt}deg) scale(1)`;
+    });
     
     return img;
 }
@@ -5118,12 +5119,12 @@ function updateMethodVisuals() {
         console.log("⚠️ getZonesConfig не найдена, используем DEFAULT_ZONES");
         // Используем константу из zones.js, если она доступна
         zones = window.DEFAULT_ZONES || [
-            { id: 1, method: 'visual', x: 20, y: 20, radius: 4.17 },
-            { id: 2, method: 'loupe', x: 40, y: 20, radius: 4.17 },
-            { id: 3, method: 'internet', x: 60, y: 20, radius: 4.17 },
-            { id: 4, method: 'testing', x: 20, y: 40, radius: 4.17 },
-            { id: 5, method: 'uv', x: 40, y: 40, radius: 4.17 },
-            { id: 6, method: 'expert', x: 60, y: 40, radius: 4.17 }
+            { id: 1, method: 'visual', x: 26, y: 58.5, radius: 4.17 },
+            { id: 2, method: 'loupe', x: 46, y: 61, radius: 4.17 },
+            { id: 3, method: 'internet', x: 62, y: 52.5, radius: 4.17 },
+            { id: 4, method: 'testing', x: 15, y: 53.5, radius: 4.17 },
+            { id: 5, method: 'uv', x: 75, y: 60, radius: 4.17 },
+            { id: 6, method: 'expert', x: 82, y: 47, radius: 4.17 }
         ];
     }
     
@@ -5163,29 +5164,48 @@ function updateMethodVisuals() {
         const img = document.createElement('img');
         img.onerror = function() {
             console.log(`  ⚠️ не удалось загрузить ${config.pngFile}, использую заглушку`);
-            this.src = `https://placehold.co/100x100/3498db/ffffff.png?text=${method.substring(0,3)}`;
-            this.style.backgroundColor = 'rgba(52, 152, 219, 0.3)';
+            // Локальная заглушка (без внешних сервисов)
+            this.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(
+                '<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120"><rect width="120" height="120" rx="14" fill="#8d6e63" opacity="0.75"/><text x="60" y="68" font-size="26" text-anchor="middle" fill="#fff" font-family="sans-serif">🔧</text></svg>'
+            );
         };
         img.src = config.pngFile;
         img.alt = `${method} step ${step}`;
+        img.className = 'method-visual-png';
         img.dataset.method = method;
         img.dataset.step = step;
         
-        // Позиционируем относительно процентов из конфига
+        // Базовые стили: без рамок, с сохранением пропорций
         img.style.position = 'absolute';
-        img.style.left = `calc(${zoneConfig.x}% + ${config.offsetX})`;
-        img.style.top = `calc(${zoneConfig.y}% + ${config.offsetY})`;
-        img.style.width = config.width;
-        img.style.height = config.height;
-        img.style.transform = 'translate(-50%, -50%)'; // Центрируем
-        img.style.zIndex = '1000';
+        img.style.width = config.width || '12%';
+        img.style.height = config.height && config.height !== 'auto' ? config.height : 'auto';
+        if (!config.width && config.height) img.style.width = 'auto';
         img.style.cursor = 'pointer';
-        img.style.border = '2px solid red';
+        img.style.pointerEvents = 'auto';
+        img.style.userSelect = 'none';
+        img.style.webkitUserDrag = 'none';
         
-        // Анимация
+        // 🪑 Привязка к столу: лежащие вещи — центром на крышке,
+        // стоящие и люди — нижней точкой (подошвой/ногами) на поверхности.
+        const kind = config.kind || 'flat';
+        const tilt = kind === 'flat' ? (config.tilt || 0) : 0;
+        const anchorY = (kind === 'flat') ? '-50%' : '-100%';
+        const groundShadow = (kind === 'flat')
+            ? 'drop-shadow(0 2px 2px rgba(0,0,0,0.45)) drop-shadow(0 5px 6px rgba(0,0,0,0.25))'
+            : 'drop-shadow(0 4px 3px rgba(0,0,0,0.35)) drop-shadow(0 8px 8px rgba(0,0,0,0.22))';
+        img.style.filter = groundShadow;
+        
+        // Лежащие предметы — чуть ниже стоящих, люди — позади всех
+        img.style.zIndex = (kind === 'person') ? '5' : (kind === 'flat' ? '11' : '10');
+        
+        // Позиционируем относительно процентов из конфига зоны
+        img.style.left = `calc(${zoneConfig.x}% + ${config.offsetX || '0%'})`;
+        img.style.top = `calc(${zoneConfig.y}% + ${config.offsetY || '0%'})`;
+        
+        // Анимация появления
         img.style.opacity = '0';
-        img.style.transform = 'translate(-50%, -50%) scale(1.5)';
-        img.style.transition = 'all 0.3s ease';
+        img.style.transform = `translate(-50%, ${anchorY}) rotate(${tilt}deg) scale(1.15)`;
+        img.style.transition = 'transform 0.3s ease, opacity 0.3s ease';
         
         // Обработчик клика
         img.addEventListener('click', (e) => {
@@ -5194,6 +5214,8 @@ function updateMethodVisuals() {
             const clickFunctionName = `click${method.charAt(0).toUpperCase() + method.slice(1)}Zone`;
             if (typeof window[clickFunctionName] === 'function') {
                 window[clickFunctionName]();
+            } else {
+                useExpertiseMethod(method);
             }
         });
         
@@ -5203,10 +5225,10 @@ function updateMethodVisuals() {
         // Анимация
         setTimeout(() => {
             img.style.opacity = '1';
-            img.style.transform = 'translate(-50%, -50%) scale(1)';
+            img.style.transform = `translate(-50%, ${anchorY}) rotate(${tilt}deg) scale(1)`;
         }, 10 + (pngCount * 50)); // Задержка для каждой PNG
         
-        console.log(`  ✅ PNG добавлен: ${config.pngFile} на ${zoneConfig.x}% x ${zoneConfig.y}%`);
+        console.log(`  ✅ PNG добавлен: ${config.pngFile} на ${zoneConfig.x}% x ${zoneConfig.y}% (${kind})`);
     });
     
     console.log(`🎉 Добавлено PNG: ${pngCount} из ${methods.length} методов`);

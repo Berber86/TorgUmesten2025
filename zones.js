@@ -3,13 +3,16 @@
 // ==============================================
 
 // Конфигурация зон по умолчанию (в процентах от размеров изображения)
+// Точки привязки лежат НА крышке рабочего стола (нижняя половина картинки):
+// лежащие инструменты центрируются по точке, стоящие и люди — нижней кромкой.
+// Стол (table.png и варианты уровня офиса) начинается примерно с 45-50% высоты.
 const DEFAULT_ZONES = [
-    { id: 1, method: 'visual', x: 20, y: 20, radius: 4.17, label: 'Визуальный осмотр' },
-    { id: 2, method: 'loupe', x: 40, y: 20, radius: 4.17, label: 'Лупа' },
-    { id: 3, method: 'internet', x: 60, y: 20, radius: 4.17, label: 'Интернет-поиск' },
-    { id: 4, method: 'testing', x: 20, y: 40, radius: 4.17, label: 'Тестирование' },
-    { id: 5, method: 'uv', x: 40, y: 40, radius: 4.17, label: 'УФ-лампа' },
-    { id: 6, method: 'expert', x: 60, y: 40, radius: 4.17, label: 'Эксперт' }
+    { id: 1, method: 'visual', x: 26, y: 58.5, radius: 4.17, label: 'Визуальный осмотр' },
+    { id: 2, method: 'loupe', x: 46, y: 61, radius: 4.17, label: 'Лупа' },
+    { id: 3, method: 'internet', x: 62, y: 52.5, radius: 4.17, label: 'Интернет-поиск' },
+    { id: 4, method: 'testing', x: 12, y: 52.5, radius: 4.17, label: 'Тестирование' },
+    { id: 5, method: 'uv', x: 75, y: 60, radius: 4.17, label: 'УФ-лампа' },
+    { id: 6, method: 'expert', x: 82, y: 47, radius: 4.17, label: 'Эксперт' }
 ];
 
 // Текущая конфигурация зон
@@ -34,7 +37,8 @@ const EXPERTISE_METHODS = [
 // ==============================================
 
 function loadZonesConfig() {
-    const saved = localStorage.getItem('expertise_zones_config');
+    // v2: старые сохранённые координаты («висели в воздухе») намеренно не переносим
+    const saved = localStorage.getItem('expertise_zones_config_v2');
     if (saved) {
         try {
             zonesConfig = JSON.parse(saved);
@@ -43,11 +47,13 @@ function loadZonesConfig() {
             console.error('Ошибка загрузки конфигурации зон:', e);
             zonesConfig = [...DEFAULT_ZONES];
         }
+    } else {
+        zonesConfig = [...DEFAULT_ZONES];
     }
 }
 
 function saveZonesConfig() {
-    localStorage.setItem('expertise_zones_config', JSON.stringify(zonesConfig));
+    localStorage.setItem('expertise_zones_config_v2', JSON.stringify(zonesConfig));
     console.log('Конфигурация зон сохранена');
 }
 

@@ -1135,9 +1135,14 @@ button:active {
   min-height: 42px;
 }
 #expertiseModal .expertise-square-container {
-  height: min(43vh, 430px) !important;
-  min-height: 240px !important;
+  /* Контейнер строго квадратный — картинка стола, зоны и наклейки
+     делят одну и ту же систему координат, предметы не «висят» над столом. */
+  width: min(100%, 43vh, 430px) !important;
+  height: auto !important;
+  min-height: 0 !important;
   max-height: none !important;
+  aspect-ratio: 1 / 1 !important;
+  margin-inline: auto !important;
 }
 #expertiseModal .expertise-square-container > .absolute {
   border-width: 1px !important;
@@ -1483,7 +1488,7 @@ button:active {
     flex-direction: row;
   }
   #expertiseModal .expertise-square-container {
-    height: 40vh !important;
+    width: min(100%, 40vh, 400px) !important;
   }
 }
 @media (max-width: 700px) {
@@ -2088,8 +2093,7 @@ button:active {
     font-size: 10px;
   }
   #expertiseModal .expertise-square-container {
-    height: 34vh !important;
-    min-height: 230px !important;
+    width: min(100%, 34vh, 340px) !important;
   }
   #expertiseMethods {
     grid-template-columns: repeat(2, minmax(0, 1fr));
